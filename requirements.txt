@@ -1,0 +1,7 @@
+# Core dependencies
+polars>=0.13.0
+pandas>=1.3.0
+numpy>=1.21.0
+
+# Optional dependencies
+pyspark>=3.0.0; python_version >= '3.8'

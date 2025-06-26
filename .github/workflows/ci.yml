@@ -35,7 +35,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[dev]
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
     
     - name: Run tests with pytest
       run: |
@@ -59,10 +60,10 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: Install pre-commit
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pre-commit
+        pip install -r requirements-dev.txt
     
     - name: Run pre-commit
       run: |
@@ -81,7 +82,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[dev]
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
     
     - name: Run mypy
       run: |
@@ -98,10 +100,10 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: Install build
+    - name: Install build tools
       run: |
         python -m pip install --upgrade pip
-        pip install build
+        pip install build twine
     
     - name: Build package
       run: |
@@ -109,7 +111,6 @@ jobs:
     
     - name: Verify package
       run: |
-        pip install twine
         twine check --strict dist/*
     
     - name: Upload artifacts
