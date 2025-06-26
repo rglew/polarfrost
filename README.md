@@ -168,15 +168,81 @@ To update the configuration, modify the [.github/dependabot.yml](.github/dependa
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🛠 Development
+
+### Prerequisites
+
+- Python 3.8+
+- [Poetry](https://python-poetry.org/) (recommended) or pip
+- [pre-commit](https://pre-commit.com/)
+
+### Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/rglew/polarfrost.git
+   cd polarfrost
+   ```
+
+2. **Install dependencies**
+   ```bash
+   # Using Poetry (recommended)
+   poetry install
+   
+   # Or using pip
+   pip install -e .[dev]
+   ```
+
+3. **Set up pre-commit hooks**
+   ```bash
+   pre-commit install
+   ```
+
+### Development Workflow
+
+1. Create a new branch for your feature or bugfix:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. Make your changes and commit them:
+   ```bash
+   git add .
+   git commit -m "Your commit message"
+   ```
+
+3. Run tests locally:
+   ```bash
+   pytest tests/ -v
+   ```
+
+4. Push your changes and create a pull request
+
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! Here's how you can help:
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+### Code Style
+
+- We use `black` for code formatting
+- `isort` for import sorting
+- `flake8` for linting
+- `mypy` for type checking
+
+All these checks are automatically run via pre-commit hooks and CI.
+
+### Testing
+
+- Write tests for new features
+- Run tests with `pytest`
+- Ensure test coverage remains high
+- Document any new features or changes
 
 ## 📄 Changelog
 
