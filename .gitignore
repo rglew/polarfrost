@@ -25,6 +25,7 @@ wheels/
 venv/
 env/
 ENV/
+test_env/
 
 # IDE
 .idea/
@@ -48,3 +49,13 @@ ENV/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Test and coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Build artifacts
+*.whl
+*.tar.gz
