@@ -1,6 +1,6 @@
-# Frost ❄️
+# Polarfrost
 
-A fast k-anonymity implementation using Polars, designed for efficient privacy-preserving data analysis.
+A fast k-anonymity implementation using Polars, featuring both Mondrian and Clustering algorithms for efficient privacy-preserving data analysis.
 
 ## Features
 
@@ -12,14 +12,14 @@ A fast k-anonymity implementation using Polars, designed for efficient privacy-p
 ## Installation
 
 ```bash
-pip install frost
+pip install polarfrost
 ```
 
 ## Quick Start
 
 ```python
 import polars as pl
-from frost import mondrian_k_anonymity
+from polarfrost import mondrian_k_anonymity
 
 # Load your data
 df = pl.read_csv("your_data.csv")

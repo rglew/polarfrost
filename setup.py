@@ -6,7 +6,7 @@ this_directory = pathlib.Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    name="frost",
+    name="polarfrost",
     version="0.1.0",
     packages=find_packages(exclude=["tests*"]),
     python_requires=">=3.8",
@@ -30,7 +30,7 @@ setup(
     description="A fast k-anonymity implementation using Polars",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/rglew/frost",
+    url="https://github.com/rglew/polarfrost",
     keywords=["anonymization", "privacy", "polars", "k-anonymity", "data-privacy"],
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -47,7 +47,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     package_data={
-        "frost": ["py.typed"],
+        "polarfrost": ["py.typed"],
     },
     include_package_data=True,
     zip_safe=False,

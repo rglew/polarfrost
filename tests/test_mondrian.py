@@ -1,9 +1,6 @@
-""
-Tests for Frost's Mondrian k-anonymity implementation.
-"""
 import os
 import polars as pl
-from frost.mondrian import mondrian_k_anonymity
+from polarfrost.mondrian import mondrian_k_anonymity
 
 def test_mondrian_basic():
     """Test basic k-anonymity functionality."""

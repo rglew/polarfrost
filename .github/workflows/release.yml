@@ -21,7 +21,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine
     
-    - name: Build and publish
+    - name: Build and publish polarfrost
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
