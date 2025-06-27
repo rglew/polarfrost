@@ -1,0 +1,51 @@
+codecov:
+  require_ci_to_pass: true
+  max_report_age: off
+  notify:
+    after_n_builds: 1
+  branch: main
+  status:
+    project: yes
+    patch: yes
+    changes: no
+  ignore:
+    - "tests/*"
+    - "examples/*"
+    - "docs/*"
+    - "*.pyc"
+    - "__pycache__"
+    - ".git"
+    - ".github"
+    - "*.md"
+    - "*.txt"
+    - "*.json"
+    - "*.yaml"
+    - "*.yml"
+    - "requirements*.txt"
+    - "setup.py"
+    - "setup.cfg"
+    - "MANIFEST.in"
+    - "*.egg-info"
+    - ".pytest_cache"
+    - ".coverage"
+    - "coverage.xml"
+    - "htmlcov"
+    - "venv"
+    - ".env"
+    - ".venv"
+    - ".mypy_cache"
+    - "*.egg"
+    - "*.so"
+    - "*.dll"
+    - "*.dylib"
+    - "*.pyd"
+    - "*.pyc"
+    - "*.pyo"
+    - "*.py[cod]"
+    - "*$py.class"
+    - ".tox/"
+    - ".nox/"
+    - ".hypothesis/"
+    - "build/"
+    - "dist/"
+    - "*.egg-info/"
