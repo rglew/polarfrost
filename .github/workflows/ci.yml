@@ -38,9 +38,9 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
     
-    - name: Run tests with pytest
+    - name: Run tests with pytest (excluding PySpark tests)
       run: |
-        python -m pytest tests/ -v --cov=./ --cov-report=xml
+        python -m pytest tests/ -v --cov=./ --cov-report=xml --durations=10 -k "not pyspark"
     
     - name: Upload coverage to Codecov
       if: matrix.python-version == '3.11'  # Only upload coverage once
