@@ -4,7 +4,7 @@ type# Polarfrost ❄️
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/pypi/pyversions/polarfrost)](https://pypi.org/project/polarfrost/)
 [![CI](https://github.com/rglew/polarfrost/actions/workflows/ci.yml/badge.svg)](https://github.com/rglew/polarfrost/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/rglew/polarfrost/graph/badge.svg?token=YOUR-TOKEN-HERE)](https://codecov.io/gh/rglew/polarfrost)
+[![codecov](https://codecov.io/gh/rglew/polarfrost/branch/main/graph/badge.svg)](https://codecov.io/gh/rglew/polarfrost)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A high-performance k-anonymity implementation using Polars and PySpark, featuring the Mondrian algorithm for efficient privacy-preserving data analysis.
