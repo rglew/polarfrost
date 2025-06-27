@@ -11,7 +11,7 @@ setup(
     packages=find_packages(exclude=["tests*"]),
     python_requires=">=3.8",
     install_requires=[
-        "polars>=0.13.0",
+        "polars==1.30.0",  # Pinned to ensure compatibility
         "pandas>=1.3.0",
         "numpy>=1.21.0",
     ],
