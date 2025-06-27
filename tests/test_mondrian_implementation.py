@@ -8,7 +8,7 @@ import pytest
 from polarfrost import mondrian_k_anonymity
 
 
-def test_mondrian_basic():
+def test_mondrian_basic() -> None:
     """Test basic Mondrian k-anonymity with a small dataset."""
     # Create a small test dataset
     data = {
@@ -58,7 +58,7 @@ def test_mondrian_basic():
     assert "count" in anon_df.columns
 
 
-def test_mondrian_with_lazyframe():
+def test_mondrian_with_lazyframe() -> None:
     """Test that the function works with LazyFrames."""
     data = {
         "age": [25, 25, 35, 35, 45, 45],
@@ -80,13 +80,14 @@ def test_mondrian_with_lazyframe():
     assert len(anon_df) > 0
 
 
-def test_mondrian_invalid_input():
+def test_mondrian_invalid_input() -> None:
     """Test that invalid inputs raise appropriate errors."""
     df = pl.DataFrame({"age": [1, 2, 3], "income": [10, 20, 30]})
 
     # Test with k larger than dataset size - should return a single group
     result = mondrian_k_anonymity(df, ["age"], "income", k=5)
-    assert len(result) == 1  # Should return a single group with all records
+    # Use shape[0] instead of len() for DataFrame compatibility
+    assert result.shape[0] == 1  # Should return a single group with all records
     assert result["count"][0] == 3  # All records should be in one group
 
     # Test with invalid column names

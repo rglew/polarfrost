@@ -28,10 +28,32 @@ pytestmark = pytest.mark.skipif(
 # Fixture to create a Spark session
 @pytest.fixture(scope="module")
 def spark():
+    # Configure Spark to run in local mode with 2 threads
     spark = (
         SparkSession.builder
         .appName("polarfrost-test")
         .master("local[2]")
+        .config("spark.driver.memory", "1g")
+        .config("spark.executor.memory", "1g")
+        .config("spark.sql.shuffle.partitions", "2")
+        .config("spark.default.parallelism", "2")
+        .config("spark.driver.extraJavaOptions", 
+               "-Dio.netty.tryReflectionSetAccessible=true "
+               "-Djava.security.manager=allow "
+               "-Djava.security.krb5.realm= "
+               "-Djava.security.krb5.kdc= "
+               "-Djava.security.krb5.conf= ")
+        .config("spark.executor.extraJavaOptions", 
+               "-Dio.netty.tryReflectionSetAccessible=true "
+               "-Djava.security.manager=allow")
+        .config("spark.hadoop.fs.defaultFS", "file:///")
+        .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")
+        .config("spark.hadoop.fs.s3a.path.style.access", "true")
+        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+        .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider")
+        .config("spark.ui.enabled", "false")
+        .config("spark.ui.showConsoleProgress", "false")
+        .config("spark.sql.legacy.timeParserPolicy", "LEGACY")
         .getOrCreate()
     )
     yield spark

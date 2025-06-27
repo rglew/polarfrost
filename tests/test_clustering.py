@@ -66,7 +66,7 @@ def test_clustering_invalid_k() -> None:
         clustering_k_anonymity(df, ["age"], "income", k=-1)
     
     with pytest.raises(ValueError, match="k must be a positive integer"):
-        clustering_k_anonymity(df, ["age"], "income", k="not_an_integer")
+        clustering_k_anonymity(df, ["age"], "income", k="not_an_integer")  # type: ignore[arg-type]
 
 
 def test_clustering_missing_columns() -> None:

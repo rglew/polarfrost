@@ -29,16 +29,53 @@ except ImportError as e:
     warnings.warn(f"Could not import all dependencies: {e}")
 
     # Define dummy functions for type checking
-    def mondrian_k_anonymity(*args, **kwargs):
+    from typing import Any, List, Optional, Union
+    from typing_extensions import Literal
+    from pyspark.sql.types import StructType
+    from pyspark.sql import DataFrame as SparkDataFrame
+    from polars import DataFrame as PolarsDataFrame, LazyFrame
+    
+    def mondrian_k_anonymity(
+        df: Union[PolarsDataFrame, LazyFrame, SparkDataFrame],
+        quasi_identifiers: List[str],
+        sensitive_column: str,
+        k: int,
+        categorical: Optional[List[str]] = None,
+        schema: Optional[StructType] = None
+    ) -> Union[PolarsDataFrame, SparkDataFrame]:
+        """Dummy function for type checking when dependencies are missing."""
         raise ImportError("Mondrian k-anonymity is not available due to missing dependencies")
 
-    def mondrian_k_anonymity_polars(*args, **kwargs):
+    def mondrian_k_anonymity_polars(
+        df: Union[PolarsDataFrame, LazyFrame],
+        quasi_identifiers: List[str],
+        sensitive_column: str,
+        k: int,
+        categorical: Optional[List[str]] = None
+    ) -> PolarsDataFrame:
+        """Dummy function for type checking when dependencies are missing."""
         raise ImportError("Mondrian k-anonymity (Polars) is not available due to missing dependencies")
 
-    def mondrian_k_anonymity_spark(*args, **kwargs):
+    def mondrian_k_anonymity_spark(
+        df: SparkDataFrame,
+        quasi_identifiers: List[str],
+        sensitive_column: str,
+        k: int,
+        categorical: Optional[List[str]] = None,
+        schema: Optional[StructType] = None
+    ) -> SparkDataFrame:
+        """Dummy function for type checking when dependencies are missing."""
         raise ImportError("Mondrian k-anonymity (PySpark) is not available due to missing dependencies")
 
-    def clustering_k_anonymity(*args, **kwargs):
+    def clustering_k_anonymity(
+        df: Union[PolarsDataFrame, LazyFrame],
+        quasi_identifiers: List[str],
+        sensitive_column: str,
+        k: int,
+        categorical: Optional[List[str]] = None,
+        method: str = "kmeans"
+    ) -> PolarsDataFrame:
+        """Dummy function for type checking when dependencies are missing."""
         raise ImportError("Clustering k-anonymity is not available due to missing dependencies")
 
     __all__ = []

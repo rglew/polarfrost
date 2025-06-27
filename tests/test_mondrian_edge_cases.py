@@ -35,7 +35,7 @@ def test_mondrian_k_larger_than_dataset() -> None:
     )
     
     # Should return a single group with all records
-    assert len(result) == 1
+    assert result.shape[0] == 1  # Using shape[0] for DataFrame compatibility
     assert result["count"][0] == 3
 
 
@@ -54,8 +54,8 @@ def test_mondrian_single_column() -> None:
     )
     
     # Should have at least one group
-    assert len(result) > 0
-    # All groups should satisfy k-anonymity
+    assert result.shape[0] > 0  # Using shape[0] for DataFrame compatibility
+    # Each group should have at least k records
     assert all(count >= 2 for count in result["count"])
 
 
@@ -75,7 +75,7 @@ def test_mondrian_all_identical() -> None:
     )
     
     # Should return a single group with all records
-    assert len(result) == 1
+    assert result.shape[0] == 1  # Using shape[0] for DataFrame compatibility
     assert result["count"][0] == 4
 
 
@@ -96,7 +96,7 @@ def test_mondrian_with_nulls() -> None:
     )
     
     # Should complete without errors
-    assert len(result) > 0
+    assert result.shape[0] > 0  # Using shape[0] for DataFrame compatibility
     # All groups should satisfy k-anonymity
     assert all(count >= 2 for count in result["count"])
 
@@ -118,7 +118,7 @@ def test_mondrian_lazyframe_input() -> None:
     )
     
     # Should complete without errors
-    assert len(result) > 0
+    assert result.shape[0] > 0  # Using shape[0] for DataFrame compatibility
     # All groups should satisfy k-anonymity
     assert all(count >= 2 for count in result["count"])
 
@@ -134,4 +134,4 @@ def test_mondrian_invalid_k() -> None:
         mondrian_k_anonymity(df, ["age"], "income", k=-1)
     
     with pytest.raises(ValueError, match="k must be a positive integer"):
-        mondrian_k_anonymity(df, ["age"], "income", k="not_an_integer")
+        mondrian_k_anonymity(df, ["age"], "income", k="not_an_integer")  # type: ignore[arg-type]

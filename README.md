@@ -37,6 +37,41 @@ cd polarfrost
 pip install -e ".[dev]"
 ```
 
+## 🧪 Testing
+
+To run the test suite:
+
+```bash
+# Install test dependencies
+pip install -e ".[test]"
+
+# Run all tests (excluding PySpark tests that require Java)
+pytest -k "not test_mondrian_pyspark.py"
+
+# Run mock PySpark tests only
+pytest tests/test_mondrian_pyspark_mock.py
+```
+
+### PySpark Testing Notes
+- The test suite includes both real PySpark tests and mock PySpark tests
+- Real PySpark tests require Java 8 or 11 to be installed
+- Mock PySpark tests run without Java and are used in CI
+- To run real PySpark tests, ensure Java is installed and set `JAVA_HOME`
+- The mock tests provide equivalent test coverage without Java dependencies
+
+### Running Specific Test Categories
+
+```bash
+# Run only unit tests
+pytest tests/test_mondrian.py
+
+# Run only edge case tests
+pytest tests/test_mondrian_edge_cases.py
+
+# Run with coverage report
+pytest --cov=polarfrost --cov-report=term-missing
+```
+
 ## 🚀 Quick Start
 
 ### Basic Usage with Polars (Mondrian Algorithm)
@@ -144,6 +179,26 @@ def mondrian_k_anonymity(
         Anonymized DataFrame with generalized quasi-identifiers
     """
 ```
+
+## 🔍 Development Notes
+
+### Testing Strategy
+
+- **Unit Tests**: Core functionality of all modules
+- **Mock Tests**: PySpark functionality without Java dependencies
+- **Edge Cases**: Handling of boundary conditions and unusual inputs
+- **Input Validation**: Comprehensive validation of all function parameters
+- **Backend Compatibility**: Tests for both Polars and PySpark backends
+
+### PySpark Implementation
+
+The PySpark implementation includes mock versions of key classes for testing:
+- `MockSparkConf`: Mocks Spark configuration
+- `MockSparkContext`: Mocks the Spark context
+- `MockSparkSession`: Mocks the Spark session
+- `MockSparkDataFrame`: Mocks Spark DataFrames with pandas backend
+
+These mocks allow testing PySpark functionality without requiring a Java runtime.
 
 ## 🔍 Algorithms
 

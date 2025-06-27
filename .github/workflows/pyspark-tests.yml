@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10']  # Focus on one Python version for PySpark tests
+        python-version: ['3.11']  # Using Python 3.11 for better PySpark and Polars compatibility
     
     steps:
     - uses: actions/checkout@v4
@@ -43,9 +43,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
-        # Explicitly install PyArrow with the correct version
-        pip install "pyarrow>=11.0.0"
-        pip install "pyspark>=3.4.0"
+        # Explicitly install PyArrow and PySpark with specific versions
+        pip install "pyarrow>=11.0.0,<12.0.0"
+        pip install "pyspark>=3.4.0,<4.0.0"
+        # Ensure test dependencies are installed
+        pip install pytest-cov
     
     - name: Run PySpark tests
       env:

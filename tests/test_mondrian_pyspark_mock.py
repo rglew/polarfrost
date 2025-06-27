@@ -24,30 +24,64 @@ logging.getLogger('py4j').setLevel(logging.ERROR)
 
 # Mock SparkConf
 class MockSparkConf:
+    def __init__(self):
+        self._conf = {}
+    
     def setAppName(self, name):
+        self._conf['spark.app.name'] = name
         return self
     
     def setMaster(self, master):
+        self._conf['spark.master'] = master
         return self
     
     def set(self, key, value):
+        self._conf[key] = value
         return self
     
     def get(self, key, defaultValue=None):
-        return defaultValue
+        return self._conf.get(key, defaultValue)
+    
+    def getAll(self):
+        return list(self._conf.items())
+    
+    def setIfMissing(self, key, value):
+        if key not in self._conf:
+            self._conf[key] = value
+        return self
 
 # Mock SparkContext
 class MockSparkContext:
     _active_spark_context = None
+    _jvm = None
+    _gateway = None
     
-    def __init__(self, master=None, appName=None, **kwargs):
-        self.master = master
-        self.appName = appName
-        self._conf = MockSparkConf()
+    def __init__(self, master=None, appName=None, conf=None, **kwargs):
+        self.master = master or 'local[2]'
+        self.appName = appName or 'polarfrost-test'
+        self._conf = conf or MockSparkConf()
         self._jsc = MagicMock()
         self._jvm = MagicMock()
         self._gateway = MagicMock()
+        self._calls = []
         self._active_spark_context = self
+        
+        # Set default configurations
+        self._conf.setAppName(self.appName)
+        self._conf.setMaster(self.master)
+        self._conf.setIfMissing('spark.driver.memory', '1g')
+        self._conf.setIfMissing('spark.executor.memory', '1g')
+        self._conf.setIfMissing('spark.sql.shuffle.partitions', '2')
+        self._conf.setIfMissing('spark.default.parallelism', '2')
+        self._conf.setIfMissing('spark.driver.extraJavaOptions', 
+                               '-Dio.netty.tryReflectionSetAccessible=true')
+        self._conf.setIfMissing('spark.executor.extraJavaOptions', 
+                               '-Dio.netty.tryReflectionSetAccessible=true')
+        
+        # Set up JVM and gateway mocks
+        self._jvm = MagicMock()
+        self._gateway = MagicMock()
+        self._gateway.jvm = self._jvm
         
     @property
     def version(self):
@@ -94,14 +128,49 @@ class MockSparkSession:
                 MockSparkSession._instantiatedSession = MockSparkSession()
             return MockSparkSession._instantiatedSession
     
-    def __init__(self, sparkContext=None):
-        self._sc = sparkContext or MockSparkContext()
+    def __init__(self, sparkContext=None, appName=None, master=None, **kwargs):
+        self._sc = sparkContext or MockSparkContext(master=master, appName=appName)
         self._jvm = self._sc._jvm
         self._jsparkSession = MagicMock()
         self._conf = self._sc._conf
         self._catalog = MagicMock()
         self._udf = MagicMock()
         self._version = '3.4.0'
+        self._calls = []
+        
+        # Set up default configurations
+        self._conf.setAppName(appName or 'polarfrost-test')
+        self._conf.setMaster(master or 'local[2]')
+        
+        # Set up mock methods
+        self.createDataFrame = MagicMock(side_effect=self._mock_create_dataframe)
+        self.sql = MagicMock(return_value=MockSparkDataFrame())
+        self.stop = MagicMock()
+        self.catalog = MagicMock()
+        self.catalog.listDatabases.return_value = []
+        self.catalog.listTables.return_value = []
+        
+        # Set as active session
+        MockSparkSession._activeSession = self
+        
+    def _mock_create_dataframe(self, data, schema=None, samplingRatio=None, verifySchema=True):
+        """Mock implementation of createDataFrame"""
+        if hasattr(data, 'toPandas'):  # If it's a DataFrame
+            return data
+        elif isinstance(data, list):
+            if not data:  # Empty list
+                return MockSparkDataFrame(pandas_df=pd.DataFrame())
+            elif isinstance(data[0], (list, tuple)):
+                if schema and hasattr(schema, 'fieldNames'):
+                    columns = schema.fieldNames()
+                else:
+                    columns = [f'col_{i}' for i in range(len(data[0]))]
+                return MockSparkDataFrame(pd.DataFrame(data, columns=columns))
+            else:  # Single column
+                return MockSparkDataFrame(pd.DataFrame({'value': data}))
+        elif hasattr(data, 'toPandas'):  # Handle RDDs or other DataFrame-like objects
+            return MockSparkDataFrame(pandas_df=data.toPandas())
+        return MockSparkDataFrame(pandas_df=pd.DataFrame(data))
         
     @property
     def _wrapped(self):
@@ -188,7 +257,8 @@ class MockSparkDataFrame:
                     # Single column data
                     self.pandas_df = pd.DataFrame({"value": data})
         else:
-            self.pandas_df = pd.DataFrame()
+            # Create empty DataFrame without triggering pandas config recursion
+            self.pandas_df = pd.DataFrame({})
         
         # Set schema if provided
         self._schema = schema
@@ -202,11 +272,12 @@ class MockSparkDataFrame:
         self.rdd = MagicMock()
         self.rdd.isEmpty.return_value = self._is_empty
         
-        # Mock count()
+        # Mock count() and __len__
         self.count = MagicMock(return_value=len(self.pandas_df))
+        self.__len__ = lambda self: len(self.pandas_df)
         
-        # Mock SparkSession
-        self.sparkSession = MockSparkSession()
+        # Initialize sparkSession as None to avoid recursion
+        self._spark_session = None
         
         # Mock Java API
         self._jdf = MagicMock()
@@ -218,6 +289,16 @@ class MockSparkDataFrame:
         # Mock Java sequence
         self._jseq = MagicMock()
         self._jseq.isEmpty.return_value = self._is_empty
+        
+    @property
+    def sparkSession(self):
+        if self._spark_session is None:
+            self._spark_session = MockSparkSession()
+        return self._spark_session
+        
+    @sparkSession.setter
+    def sparkSession(self, value):
+        self._spark_session = value
         
     def schema(self):
         return self._schema
@@ -310,54 +391,82 @@ def create_test_data() -> pd.DataFrame:
         'score': [0.8, 0.9, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2]
     })
 
-@pytest.fixture
-def mock_spark_session():
+@pytest.fixture(scope='function')
+def mock_spark_session() -> MockSparkSession:
     """Fixture to mock SparkSession with proper context setup."""
-    # Create a mock SparkSession with a mock SparkContext
-    mock_sc = MockSparkContext()
+    # Reset class variables to ensure clean state
+    MockSparkSession._activeSession = None
+    MockSparkSession._instantiatedSession = None
+    
+    # Create a mock SparkConf with test configurations
+    mock_conf = MockSparkConf()
+    mock_conf.setAppName('polarfrost-test')
+    mock_conf.setMaster('local[2]')
+    mock_conf.set('spark.driver.memory', '1g')
+    mock_conf.set('spark.executor.memory', '1g')
+    mock_conf.set('spark.sql.shuffle.partitions', '2')
+    mock_conf.set('spark.default.parallelism', '2')
+    
+    # Create a mock SparkContext with the configuration
+    mock_sc = MockSparkContext(conf=mock_conf)
+    
+    # Create a mock SparkSession
     mock_session = MockSparkSession(sparkContext=mock_sc)
     
-    # Create a mock builder that returns our mock session
-    mock_builder = MagicMock()
-    mock_builder.getOrCreate.return_value = mock_session
+    # Set up test data
+    data = [
+        (25, "M", "12345", 50000, "Flu"),
+        (30, "F", "12345", 60000, "Cold"),
+        (35, "M", "54321", 70000, "Flu"),
+        (40, "F", "54321", 80000, "Cold")
+    ]
     
-    # Patch the SparkSession and SparkContext classes
-    with patch('pyspark.sql.SparkSession', autospec=True) as mock_spark_session_class, \
-         patch('pyspark.SparkContext', autospec=True) as mock_spark_context_class, \
-         patch('pyspark.sql.SparkSession.builder', return_value=mock_builder), \
-         patch('pyspark.SparkContext.getOrCreate', return_value=mock_sc):
+    schema = StructType([
+        StructField("age", IntegerType()),
+        StructField("gender", StringType()),
+        StructField("zipcode", StringType()),
+        StructField("income", IntegerType()),
+        StructField("condition", StringType())
+    ])
+    
+    # Create a test DataFrame
+    test_df = MockSparkDataFrame(pd.DataFrame(
+        data, 
+        columns=[f.name for f in schema.fields]
+    ))
+    
+    # Configure mock methods
+    mock_session.createDataFrame.return_value = test_df
+    mock_session.sql.return_value = test_df
+    mock_session.catalog = MagicMock()
+    mock_session.catalog.listDatabases.return_value = []
+    mock_session.catalog.listTables.return_value = []
+    
+    # Set up the active session
+    MockSparkSession._instantiatedSession = mock_session
+    MockSparkSession._activeSession = mock_session
+    
+    # Patch the SparkSession builder to return our mock session
+    with patch('pyspark.sql.SparkSession.builder') as mock_builder, \
+         patch('pyspark.SparkContext', return_value=mock_sc), \
+         patch('pyspark.conf.SparkConf', return_value=mock_conf):
         
-        # Configure the mock SparkSession class
-        mock_spark_session_class.getActiveSession.return_value = mock_session
-        mock_spark_session_class._instantiatedSession = mock_session
-        
-        # Configure the mock SparkContext class
-        mock_spark_context_class._active_spark_context = mock_sc
-        
-        # Set up the session's createDataFrame method
-        def mock_create_dataframe(data, schema=None, verifySchema=True):
-            return MockSparkDataFrame(data, schema=schema)
-        
-        mock_session.createDataFrame = MagicMock(side_effect=mock_create_dataframe)
-        
-        # Set up other mocks
-        mock_session.conf = MagicMock()
-        mock_session._sc = mock_sc
-        
-        # Set up the active session
-        MockSparkSession._instantiatedSession = mock_session
-        MockSparkSession._activeSession = mock_session
-        MockSparkContext._active_spark_context = mock_sc
+        # Configure the mock builder
+        mock_builder.getOrCreate.return_value = mock_session
+        mock_builder.appName.return_value = mock_builder
+        mock_builder.master.return_value = mock_builder
+        mock_builder.config.return_value = mock_builder
         
         yield mock_session
-        
-        # Cleanup
-        MockSparkSession._instantiatedSession = None
-        MockSparkSession._activeSession = None
-        MockSparkContext._active_spark_context = None
+    
+    # Clean up after test
+    mock_session.stop()
+    MockSparkSession._activeSession = None
+    MockSparkSession._instantiatedSession = None
+    MockSparkContext._active_spark_context = None
 
 @pytest.fixture
-def test_data_pyspark():
+def test_data_pyspark() -> MockSparkDataFrame:
     """Create a test PySpark DataFrame."""
     # Define test data
     data = [
@@ -411,7 +520,7 @@ def test_data_pyspark():
     return mock_df
 
 @pytest.fixture
-def output_schema():
+def output_schema() -> StructType:
     """Define output schema for testing."""
     return StructType([
         StructField("age", StringType(), True),
@@ -420,7 +529,7 @@ def output_schema():
         StructField("count", IntegerType(), False)
     ])
 
-def test_pyspark_mock_basic(test_data_pyspark, output_schema):
+def test_pyspark_mock_basic(test_data_pyspark: SparkDataFrame, output_schema: StructType) -> None:
     """Test basic functionality with mock PySpark DataFrame."""
     from polarfrost.mondrian import mondrian_k_anonymity_spark
     
@@ -465,7 +574,7 @@ def test_pyspark_mock_basic(test_data_pyspark, output_schema):
         assert result_columns.issuperset(expected_columns)
 
 
-def test_pyspark_mock_with_none_values(test_data_pyspark, output_schema):
+def test_pyspark_mock_with_none_values(test_data_pyspark: SparkDataFrame, output_schema: StructType) -> None:
     """Test handling of None/NA values in PySpark DataFrame."""
     from polarfrost.mondrian import mondrian_k_anonymity_spark
     
@@ -493,7 +602,7 @@ def test_pyspark_mock_with_none_values(test_data_pyspark, output_schema):
         assert hasattr(result, 'schema')
 
 
-def test_pyspark_mock_with_single_partition(test_data_pyspark, output_schema):
+def test_pyspark_mock_with_single_partition(test_data_pyspark: SparkDataFrame, output_schema: StructType) -> None:
     """Test with data that should result in a single partition."""
     from polarfrost.mondrian import mondrian_k_anonymity_spark
     
@@ -521,7 +630,7 @@ def test_pyspark_mock_with_single_partition(test_data_pyspark, output_schema):
         assert hasattr(result, 'schema')
 
 
-def test_pyspark_mock_with_large_k(test_data_pyspark, output_schema):
+def test_pyspark_mock_with_large_k(test_data_pyspark: SparkDataFrame, output_schema: StructType) -> None:
     """Test with k larger than the number of records."""
     from polarfrost.mondrian import mondrian_k_anonymity_spark
     
@@ -546,7 +655,7 @@ def test_pyspark_mock_with_large_k(test_data_pyspark, output_schema):
         assert len(result_pdf) == 1
         assert result_pdf['count'].iloc[0] == len(test_data_pyspark.pandas_df)
 
-def test_pyspark_mock_empty_dataframe(mock_spark_session):
+def test_pyspark_mock_empty_dataframe(mock_spark_session: MockSparkSession) -> None:
     """Test with empty PySpark DataFrame."""
     from polarfrost.mondrian import mondrian_k_anonymity_spark
 
@@ -578,7 +687,7 @@ def test_pyspark_mock_empty_dataframe(mock_spark_session):
     # Verify rdd.isEmpty() was called
     mock_df.rdd.isEmpty.assert_called_once()
 
-def test_pyspark_mock_invalid_k(test_data_pyspark, mock_spark_session):
+def test_pyspark_mock_invalid_k(test_data_pyspark: SparkDataFrame, mock_spark_session: MockSparkSession) -> None:
     """Test with invalid k values."""
     from polarfrost.mondrian import mondrian_k_anonymity_spark
     

@@ -54,7 +54,8 @@ def clustering_k_anonymity(
         df = df.lazy()
     
     # Check for empty DataFrame
-    if df.select(pl.len()).collect().item(0, 0) == 0:
+    df_len = df.select(pl.len()).collect().item(0, 0) if not is_lazy else df.select(pl.len()).collect().item(0, 0)
+    if df_len == 0:
         raise ValueError("Input DataFrame cannot be empty")
 
     # Validate k is a positive integer

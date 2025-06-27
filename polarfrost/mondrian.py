@@ -140,18 +140,17 @@ def mondrian_k_anonymity_polars(
                 # For numerical, use range
                 min_val = part_df[col].min()
                 max_val = part_df[col].max()
-                if isinstance(min_val, bytes) or isinstance(max_val, bytes):
-                    min_val = (
-                        min_val.decode("utf-8")
-                        if isinstance(min_val, bytes)
-                        else str(min_val)
-                    )
-                    max_val = (
-                        max_val.decode("utf-8")
-                        if isinstance(max_val, bytes)
-                        else str(max_val)
-                    )
-                row[col] = f"{min_val}-{max_val}"
+                
+                # Ensure we have valid numeric values
+                if min_val is None or max_val is None:
+                    row[col] = "*"  # Handle null values
+                else:
+                    # Convert to string, handling bytes and other types
+                    min_str = min_val.decode("utf-8") if isinstance(min_val, bytes) else str(min_val)
+                    max_str = max_val.decode("utf-8") if isinstance(max_val, bytes) else str(max_val)
+                    
+                    # Store as string range
+                    row[col] = f"{min_str}-{max_str}"
 
         # Add sensitive values and count
         sensitive_vals = part_df[sensitive_column].unique()
