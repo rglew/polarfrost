@@ -6,7 +6,7 @@ import numpy as np
 from polarfrost import mondrian_k_anonymity, mondrian_k_anonymity_polars
 
 
-def test_mondrian_empty_dataframe():
+def test_mondrian_empty_dataframe() -> None:
     """Test handling of empty DataFrames."""
     df = pl.DataFrame({"age": [], "gender": [], "income": []})
     
@@ -19,7 +19,7 @@ def test_mondrian_empty_dataframe():
         )
 
 
-def test_mondrian_k_larger_than_dataset():
+def test_mondrian_k_larger_than_dataset() -> None:
     """Test when k is larger than the dataset size."""
     df = pl.DataFrame({
         "age": [25, 30, 35],
@@ -39,7 +39,7 @@ def test_mondrian_k_larger_than_dataset():
     assert result["count"][0] == 3
 
 
-def test_mondrian_single_column():
+def test_mondrian_single_column() -> None:
     """Test with a single quasi-identifier column."""
     df = pl.DataFrame({
         "age": [25, 25, 30, 30, 35, 35],
@@ -59,7 +59,7 @@ def test_mondrian_single_column():
     assert all(count >= 2 for count in result["count"])
 
 
-def test_mondrian_all_identical():
+def test_mondrian_all_identical() -> None:
     """Test with all records being identical."""
     df = pl.DataFrame({
         "age": [25, 25, 25, 25],
@@ -79,7 +79,7 @@ def test_mondrian_all_identical():
     assert result["count"][0] == 4
 
 
-def test_mondrian_with_nulls():
+def test_mondrian_with_nulls() -> None:
     """Test handling of null values in the data."""
     df = pl.DataFrame({
         "age": [25, None, 30, 30, None, 35],
@@ -101,7 +101,7 @@ def test_mondrian_with_nulls():
     assert all(count >= 2 for count in result["count"])
 
 
-def test_mondrian_lazyframe_input():
+def test_mondrian_lazyframe_input() -> None:
     """Test that the function works with LazyFrame input."""
     df = pl.DataFrame({
         "age": [25, 25, 30, 30, 35, 35],
@@ -123,7 +123,7 @@ def test_mondrian_lazyframe_input():
     assert all(count >= 2 for count in result["count"])
 
 
-def test_mondrian_invalid_k():
+def test_mondrian_invalid_k() -> None:
     """Test with invalid k values."""
     df = pl.DataFrame({"age": [25, 30, 35], "income": [50000, 60000, 70000]})
     

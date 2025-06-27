@@ -6,12 +6,12 @@ import numpy as np
 from polarfrost import clustering_k_anonymity
 
 
-def test_clustering_import():
+def test_clustering_import() -> None:
     """Test that the clustering function is properly imported."""
     assert callable(clustering_k_anonymity)
 
 
-def test_clustering_not_implemented():
+def test_clustering_not_implemented() -> None:
     """Test that the clustering function raises NotImplementedError."""
     df = pl.DataFrame({
         "age": [25, 35, 45, 55],
@@ -28,7 +28,7 @@ def test_clustering_not_implemented():
         )
 
 
-def test_clustering_invalid_method():
+def test_clustering_invalid_method() -> None:
     """Test that an invalid method raises a ValueError."""
     df = pl.DataFrame({"age": [1, 2, 3], "income": [10, 20, 30]})
     
@@ -42,7 +42,7 @@ def test_clustering_invalid_method():
         )
 
 
-def test_clustering_empty_dataframe():
+def test_clustering_empty_dataframe() -> None:
     """Test that an empty DataFrame raises a ValueError."""
     df = pl.DataFrame({"age": [], "income": []})
     
@@ -55,7 +55,7 @@ def test_clustering_empty_dataframe():
         )
 
 
-def test_clustering_invalid_k():
+def test_clustering_invalid_k() -> None:
     """Test that invalid k values raise appropriate errors."""
     df = pl.DataFrame({"age": [1, 2, 3], "income": [10, 20, 30]})
     
@@ -69,7 +69,7 @@ def test_clustering_invalid_k():
         clustering_k_anonymity(df, ["age"], "income", k="not_an_integer")
 
 
-def test_clustering_missing_columns():
+def test_clustering_missing_columns() -> None:
     """Test that missing columns raise appropriate errors."""
     df = pl.DataFrame({"age": [1, 2, 3], "income": [10, 20, 30]})
     
@@ -80,7 +80,7 @@ def test_clustering_missing_columns():
         clustering_k_anonymity(df, ["age"], "nonexistent", k=2)
 
 
-def test_clustering_invalid_input_type():
+def test_clustering_invalid_input_type() -> None:
     """Test that invalid input types raise appropriate errors."""
     with pytest.raises(ValueError, match="Input must be a Polars DataFrame or LazyFrame"):
         clustering_k_anonymity("not a dataframe", ["age"], "income", k=2)
@@ -89,7 +89,7 @@ def test_clustering_invalid_input_type():
         clustering_k_anonymity(pl.DataFrame({"age": [1, 2, 3]}), [], "income", k=2)
 
 
-def test_clustering_with_lazyframe():
+def test_clustering_with_lazyframe() -> None:
     """Test that the function works with LazyFrame input."""
     df = pl.DataFrame({
         "age": [25, 25, 35, 35],

@@ -1,7 +1,7 @@
 """Test basic imports."""
 
 
-def test_import():
+def test_import() -> None:
     """Test that the package can be imported and has the expected attributes."""
     import polarfrost
 
