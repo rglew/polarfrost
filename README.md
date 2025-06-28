@@ -1,18 +1,19 @@
-type# Polarfrost ❄️
+# Polarfrost ❄️
 
 [![PyPI](https://img.shields.io/pypi/v/polarfrost)](https://pypi.org/project/polarfrost/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/pypi/pyversions/polarfrost)](https://pypi.org/project/polarfrost/)
-[![CI](https://github.com/rglew/polarfrost/actions/workflows/ci.yml/badge.svg)](https://github.com/rglew/polarfrost/actions/workflows/ci.yml)
+[![CI](https://github.com/rglew/polarfrost/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rglew/polarfrost/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/rglew/polarfrost/branch/main/graph/badge.svg)](https://codecov.io/gh/rglew/polarfrost)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Tests](https://img.shields.io/github/actions/workflow/status/rglew/polarfrost/ci.yml?branch=main&label=tests)](https://github.com/rglew/polarfrost/actions/workflows/ci.yml)
 
-A high-performance k-anonymity implementation using Polars and PySpark, featuring the Mondrian algorithm for efficient privacy-preserving data analysis.
+A high-performance k-anonymity implementation using Polars, featuring the Mondrian algorithm for efficient privacy-preserving data analysis.
 
 ## ✨ Features
 
 - 🚀 **Blazing Fast**: Leverages Polars for high-performance data processing
-- 🔄 **Dual Backend**: Supports both local (Polars) and distributed (PySpark) processing
+- 🚀 **High Performance**: Optimized for speed with Polars' lazy execution
 - 📊 **Data Utility**: Preserves data utility while ensuring privacy
 - 🐍 **Pythonic API**: Simple and intuitive interface
 - 🔒 **Privacy-Preserving**: Implements k-anonymity to protect sensitive information
