@@ -101,7 +101,7 @@ def test_clustering_invalid_input_type() -> None:
     ):
         # Intentional type error test - we're checking the runtime validation
         clustering_k_anonymity(
-            "not a dataframe",  # type: ignore[arg-type]
+            "not a dataframe",  # type: ignore[arg-type]  # noqa: F821
             ["age"],
             "income",
             k=2

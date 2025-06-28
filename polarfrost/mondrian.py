@@ -228,8 +228,7 @@ def mondrian_k_anonymity_spark(
         categorical = []
 
     # Define the UDF with proper type hints
-    # pandas_udf decorator is not fully typed
-    @pandas_udf(  # type: ignore[misc]
+    @pandas_udf(  # type: ignore[misc]  # noqa: F821
         returnType=schema,
         functionType=PandasUDFType.GROUPED_MAP,
     )
