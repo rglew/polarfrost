@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="polarfrost",
-    version="0.2.0",
+    version="0.2.1",  # Patch release with mypy and CI fixes
     packages=find_packages(exclude=["tests*"]),
     python_requires=">=3.9,<3.12",  # Explicitly support up to Python 3.11
     install_requires=[
