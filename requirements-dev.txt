@@ -8,7 +8,7 @@ mypy>=1.0.0,<2.0.0
 pandas-stubs>=2.0.0,<3.0.0
 pre-commit>=3.0.0,<4.0.0
 pyarrow>=11.0.0,<16.0.0
-pyspark-stubs>=3.5.0,<4.0.0
+pyspark-stubs>=3.0.0,<4.0.0
 
 # Testing
 pytest>=7.0.0,<9.0.0
