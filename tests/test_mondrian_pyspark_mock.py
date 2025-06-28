@@ -3,6 +3,7 @@
 import pytest
 import polars as pl
 import pandas as pd
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import numpy as np
 from typing import Dict, Any, List, Optional, Union
 from unittest.mock import MagicMock, patch, ANY, call, PropertyMock
@@ -24,46 +25,105 @@ logging.getLogger('py4j').setLevel(logging.ERROR)
 
 # Mock SparkConf
 class MockSparkConf:
-    def __init__(self):
-        self._conf = {}
+    def __init__(self) -> None:
+        """Initialize a new MockSparkConf with an empty configuration."""
+        self._conf: Dict[str, Any] = {}
     
-    def setAppName(self, name):
+    def setAppName(self, name: str) -> 'MockSparkConf':
+        """Set the application name.
+        
+        Args:
+            name: The application name
+            
+        Returns:
+            This MockSparkConf instance
+        """
         self._conf['spark.app.name'] = name
         return self
     
-    def setMaster(self, master):
+    def setMaster(self, master: str) -> 'MockSparkConf':
+        """Set the master URL.
+        
+        Args:
+            master: The master URL
+            
+        Returns:
+            This MockSparkConf instance
+        """
         self._conf['spark.master'] = master
         return self
     
-    def set(self, key, value):
+    def set(self, key: str, value: Any) -> 'MockSparkConf':
+        """Set a configuration property.
+        
+        Args:
+            key: The configuration key
+            value: The configuration value
+            
+        Returns:
+            This MockSparkConf instance
+        """
         self._conf[key] = value
         return self
     
-    def get(self, key, defaultValue=None):
+    def get(self, key: str, defaultValue: Optional[Any] = None) -> Any:
+        """Get a configuration property.
+        
+        Args:
+            key: The configuration key
+            defaultValue: Default value if key is not found
+            
+        Returns:
+            The configuration value or defaultValue if key is not found
+        """
         return self._conf.get(key, defaultValue)
     
-    def getAll(self):
+    def getAll(self) -> List[Tuple[str, Any]]:
+        """Get all configuration properties as a list of key-value pairs.
+        
+        Returns:
+            A list of (key, value) tuples
+        """
         return list(self._conf.items())
     
-    def setIfMissing(self, key, value):
+    def setIfMissing(self, key: str, value: Any) -> 'MockSparkConf':
+        """Set a configuration property if it's not already set.
+        
+        Args:
+            key: The configuration key
+            value: The configuration value
+            
+        Returns:
+            This MockSparkConf instance
+        """
         if key not in self._conf:
             self._conf[key] = value
         return self
 
 # Mock SparkContext
 class MockSparkContext:
-    _active_spark_context = None
-    _jvm = None
-    _gateway = None
+    """Mock implementation of PySpark's SparkContext for testing purposes."""
+    _active_spark_context: Optional['MockSparkContext'] = None
+    _jvm: Optional[MagicMock] = None
+    _gateway: Optional[MagicMock] = None
     
-    def __init__(self, master=None, appName=None, conf=None, **kwargs):
+    def __init__(self, master: Optional[str] = None, appName: Optional[str] = None, 
+                 conf: Optional['MockSparkConf'] = None, **kwargs: Any) -> None:
+        """Initialize a new MockSparkContext.
+        
+        Args:
+            master: Cluster URL to connect to (e.g., 'local[2]')
+            appName: A name for the application
+            conf: Optional Spark configuration
+            **kwargs: Additional keyword arguments (ignored)
+        """
         self.master = master or 'local[2]'
         self.appName = appName or 'polarfrost-test'
         self._conf = conf or MockSparkConf()
         self._jsc = MagicMock()
         self._jvm = MagicMock()
         self._gateway = MagicMock()
-        self._calls = []
+        self._calls: List[Any] = []
         self._active_spark_context = self
         
         # Set default configurations
@@ -84,17 +144,37 @@ class MockSparkContext:
         self._gateway.jvm = self._jvm
         
     @property
-    def version(self):
+    def version(self) -> str:
+        """Get the version of Spark.
+        
+        Returns:
+            The Spark version string
+        """
         return '3.4.0'
-    
-    def getConf(self):
+        
+    def getConf(self) -> 'MockSparkConf':
+        """Get the Spark configuration.
+        
+        Returns:
+            The Spark configuration object
+        """
         return self._conf
-    
-    def stop(self):
+        
+    def stop(self) -> None:
+        """Stop the SparkContext."""
         MockSparkContext._active_spark_context = None
-    
+        
     @classmethod
-    def getOrCreate(cls, *args, **kwargs):
+    def getOrCreate(cls, *args: Any, **kwargs: Any) -> 'MockSparkContext':
+        """Get the active SparkContext or create a new one if none exists.
+        
+        Args:
+            *args: Positional arguments to pass to the constructor
+            **kwargs: Keyword arguments to pass to the constructor
+            
+        Returns:
+            The active MockSparkContext instance
+        """
         if cls._active_spark_context is None:
             cls._active_spark_context = cls(*args, **kwargs)
         return cls._active_spark_context
@@ -110,20 +190,22 @@ class MockSparkSession:
             self.master = None
             self.config = {}
         
-        def appName(self, name):
+        def appName(self, name: str) -> 'MockSparkSession.Builder':
+            """Set the application name."""
             self.appName = name
             return self
             
-        def master(self, master):
+        def master(self, master: str) -> 'MockSparkSession.Builder':
+            """Set the master URL."""
             self.master = master
             return self
             
-        def config(self, key=None, value=None):
+        def config(self, key: Optional[str] = None, value: Optional[Any] = None) -> 'MockSparkSession':
             if key is not None and value is not None:
                 self.config[key] = value
             return self
             
-        def getOrCreate(self):
+        def getOrCreate(self) -> 'MockSparkSession':
             if MockSparkSession._instantiatedSession is None:
                 MockSparkSession._instantiatedSession = MockSparkSession()
             return MockSparkSession._instantiatedSession
@@ -153,7 +235,7 @@ class MockSparkSession:
         # Set as active session
         MockSparkSession._activeSession = self
         
-    def _mock_create_dataframe(self, data, schema=None, samplingRatio=None, verifySchema=True):
+    def _mock_create_dataframe(self, data: Any, schema: Optional[Any] = None, samplingRatio: Optional[float] = None, verifySchema: bool = True) -> 'MockSparkDataFrame':
         """Mock implementation of createDataFrame"""
         if hasattr(data, 'toPandas'):  # If it's a DataFrame
             return data
@@ -177,26 +259,60 @@ class MockSparkSession:
         return self
         
     @property
-    def sparkContext(self):
+    def sparkContext(self) -> 'MockSparkContext':
+        """Get the SparkContext associated with this SparkSession."""
         return self._sc
     
-    def createDataFrame(self, data, schema=None, samplingRatio=None, verifySchema=True):
+    def createDataFrame(
+        self, 
+        data: Any, 
+        schema: Optional[Any] = None, 
+        samplingRatio: Optional[float] = None, 
+        verifySchema: bool = True
+    ) -> 'MockSparkDataFrame':
+        """Create a DataFrame from an RDD, a list or a pandas.DataFrame.
+        
+        Args:
+            data: The input data to create the DataFrame from
+            schema: Optional schema for the DataFrame
+            samplingRatio: Not used, for API compatibility
+            verifySchema: Not used, for API compatibility
+            
+        Returns:
+            A new MockSparkDataFrame instance
+        """
         return MockSparkDataFrame(data, schema)
     
-    def newSession(self):
+    def newSession(self) -> 'MockSparkSession':
+        """Return a new session with the same configuration as this session.
+        
+        Returns:
+            A new MockSparkSession instance with the same configuration
+        """
         return self
     
     @classmethod
-    def getActiveSession(cls):
+    def getActiveSession(cls) -> 'MockSparkSession':
+        """Get the currently active SparkSession, or create a new one if none exists.
+        
+        Returns:
+            The active MockSparkSession instance
+        """
         if cls._activeSession is None:
             cls._activeSession = cls()
         return cls._activeSession
     
     @classmethod
-    def builder(cls):
+    def builder(cls) -> 'MockSparkSession.Builder':
+        """Create a builder for constructing a SparkSession.
+        
+        Returns:
+            A new Builder instance for creating MockSparkSession
+        """
         return cls.Builder()
     
-    def stop(self):
+    def stop(self) -> None:
+        """Stop the SparkSession."""
         MockSparkSession._instantiatedSession = None
         MockSparkSession._activeSession = None
 
@@ -238,7 +354,21 @@ def spark_session():
 
 # Enhanced Mock PySpark DataFrame for testing
 class MockSparkDataFrame:
-    def __init__(self, data=None, schema=None, pandas_df=None):
+    """Mock implementation of PySpark DataFrame for testing purposes."""
+    
+    def __init__(
+        self, 
+        data: Optional[Union[pd.DataFrame, List, Tuple]] = None, 
+        schema: Optional[Any] = None, 
+        pandas_df: Optional[pd.DataFrame] = None
+    ) -> None:
+        """Initialize a new MockSparkDataFrame.
+        
+        Args:
+            data: Input data as a pandas DataFrame, list, or tuple
+            schema: Optional schema for the DataFrame
+            pandas_df: Optional pandas DataFrame to use directly
+        """
         # Initialize pandas DataFrame
         if pandas_df is not None:
             self.pandas_df = pandas_df.copy()
@@ -262,58 +392,108 @@ class MockSparkDataFrame:
         
         # Set schema if provided
         self._schema = schema
-        self._is_empty = self.pandas_df.empty
+        self._is_empty: bool = self.pandas_df.empty
         
         # Initialize columns and data types
-        self._columns = list(self.pandas_df.columns) if not self.pandas_df.empty else []
-        self._dtypes = {col: str(dtype) for col, dtype in self.pandas_df.dtypes.items()} if not self.pandas_df.empty else {}
+        self._columns: List[str] = list(self.pandas_df.columns) if not self.pandas_df.empty else []
+        self._dtypes: Dict[str, str] = {col: str(dtype) for col, dtype in self.pandas_df.dtypes.items()} if not self.pandas_df.empty else {}
         
         # Mock rdd.isEmpty()
-        self.rdd = MagicMock()
+        self.rdd: MagicMock = MagicMock()
         self.rdd.isEmpty.return_value = self._is_empty
         
         # Mock count() and __len__
-        self.count = MagicMock(return_value=len(self.pandas_df))
-        self.__len__ = lambda self: len(self.pandas_df)
+        self.count: MagicMock = MagicMock(return_value=len(self.pandas_df))
+        
+        # Define __len__ as a proper method with type hints
+        def __len__(self) -> int:
+            return len(self.pandas_df)
+            
+        self.__len__ = __len__.__get__(self)
         
         # Initialize sparkSession as None to avoid recursion
-        self._spark_session = None
+        self._spark_session: Optional[MockSparkSession] = None
         
         # Mock Java API
-        self._jdf = MagicMock()
+        self._jdf: MagicMock = MagicMock()
         self._jdf.schema.return_value.jsonValue.return_value = {
             'type': 'struct',
             'fields': [{'name': col, 'type': 'string', 'nullable': True} for col in self._columns]
         } if self._columns else {'type': 'struct', 'fields': []}
         
         # Mock Java sequence
-        self._jseq = MagicMock()
+        self._jseq: MagicMock = MagicMock()
         self._jseq.isEmpty.return_value = self._is_empty
         
     @property
-    def sparkSession(self):
+    def sparkSession(self) -> 'MockSparkSession':
+        """Get the SparkSession associated with this DataFrame.
+        
+        Returns:
+            The associated MockSparkSession instance, creating one if it doesn't exist
+        """
         if self._spark_session is None:
             self._spark_session = MockSparkSession()
         return self._spark_session
         
     @sparkSession.setter
-    def sparkSession(self, value):
+    def sparkSession(self, value: 'MockSparkSession') -> None:
+        """Set the SparkSession associated with this DataFrame.
+        
+        Args:
+            value: The MockSparkSession instance to associate with this DataFrame
+        """
         self._spark_session = value
         
-    def schema(self):
+    def schema(self) -> Any:
+        """Get the schema of this DataFrame.
+        
+        Returns:
+            The schema object or None if not set
+        """
         return self._schema
     
-    def withColumn(self, name, col):
+    def withColumn(self, name: str, col: Any) -> 'MockSparkDataFrame':
+        """Mock implementation of withColumn.
+        
+        Args:
+            name: Name of the new column
+            col: Column expression
+            
+        Returns:
+            This MockSparkDataFrame instance (for method chaining)
+        """
         # Simple mock for withColumn - just return self for chaining
         return self
     
-    def groupBy(self, *cols):
+    def groupBy(self, *cols: Any) -> 'MockGroupedData':
+        """Group the DataFrame by the specified columns.
+        
+        Args:
+            *cols: Column names or expressions to group by
+            
+        Returns:
+            A MockGroupedData instance for the grouped data
+        """
         # Create a mock GroupedData object
         class MockGroupedData:
-            def __init__(self, parent_df):
+            def __init__(self, parent_df: 'MockSparkDataFrame') -> None:
                 self.parent_df = parent_df
             
-            def applyInPandas(self, func, schema):
+            def applyInPandas(self, func: Callable[[pd.DataFrame], pd.DataFrame], 
+                           schema: Any) -> 'MockSparkDataFrame':
+                """Apply a function to each group and return the result as a DataFrame.
+                
+                Args:
+                    func: Function to apply to each group's pandas DataFrame
+                    schema: Schema of the resulting DataFrame
+                    
+                Returns:
+                    A new MockSparkDataFrame containing the results
+                    
+                Raises:
+                    Exception: If there's an error applying the function
+                """
                 try:
                     # Get the pandas DataFrame from the parent
                     pdf = self.parent_df.pandas_df
@@ -333,13 +513,20 @@ class MockSparkDataFrame:
         
         return MockGroupedData(self)
     
-    def select(self, *cols):
-        # Mock select to return a new DataFrame with selected columns
+    def select(self, *cols: Any) -> 'MockSparkDataFrame':
+        """Select columns from the DataFrame.
+        
+        Args:
+            *cols: Column names or column expressions to select
+            
+        Returns:
+            A new MockSparkDataFrame with the selected columns
+        """
         if not cols:
             return self
             
         # Handle both column names and column objects
-        col_names = []
+        col_names: List[str] = []
         for col in cols:
             if hasattr(col, '_jc'):  # Column object
                 col_names.append(str(col))
@@ -352,28 +539,67 @@ class MockSparkDataFrame:
         else:
             return MockSparkDataFrame(pandas_df=self.pandas_df[col_names])
     
-    def collect(self):
-        # Mock collect to return rows
+    def collect(self) -> List[MagicMock]:
+        """Collect all records from the DataFrame as a list.
+        
+        Returns:
+            A list of Row objects as MagicMock instances
+        """
         return [MagicMock(asDict=lambda row=row: row) for row in self.pandas_df.to_dict('records')]
     
-    def columns(self):
+    def columns(self) -> List[str]:
+        """Get the list of column names.
+        
+        Returns:
+            A list of column names
+        """
         return self._columns
     
-    def dtypes(self):
+    def dtypes(self) -> List[Tuple[str, str]]:
+        """Get the data types of each column.
+        
+        Returns:
+            A list of (column_name, type_string) tuples
+        """
         return [(col, self._dtypes.get(col, 'string')) for col in self._columns]
     
-    def createOrReplaceTempView(self, name):
+    def createOrReplaceTempView(self, name: str) -> None:
+        """Create or replace a temporary view with the given name.
+        
+        Args:
+            name: Name of the temporary view
+        """
         # No-op for testing
         pass
         
-    def isEmpty(self):
+    def isEmpty(self) -> bool:
+        """Check if the DataFrame is empty.
+        
+        Returns:
+            True if the DataFrame is empty, False otherwise
+        """
         return self._is_empty
         
-    def rdd(self):
+    def rdd(self) -> Any:
+        """Convert the DataFrame to an RDD.
+        
+        Returns:
+            A mock RDD object
+        """
         return self._rdd
         
-    def __getattr__(self, name):
-        # Forward any other attribute access to the pandas DataFrame
+    def __getattr__(self, name: str) -> Any:
+        """Forward attribute access to the underlying pandas DataFrame if it exists.
+        
+        Args:
+            name: Name of the attribute to get
+            
+        Returns:
+            The attribute value from the pandas DataFrame
+            
+        Raises:
+            AttributeError: If the attribute doesn't exist on either the mock or pandas DataFrame
+        """
         if hasattr(self.pandas_df, name):
             return getattr(self.pandas_df, name)
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
