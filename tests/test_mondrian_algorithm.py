@@ -4,7 +4,7 @@ import polars as pl
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
 
-def test_mondrian_numerical_attributes():
+def test_mondrian_numerical_attributes() -> None:
     """Test Mondrian with numerical attributes."""
     # Create a test DataFrame with numerical quasi-identifiers
     df = pl.DataFrame(
@@ -33,7 +33,7 @@ def test_mondrian_numerical_attributes():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_categorical_attributes():
+def test_mondrian_categorical_attributes() -> None:
     """Test Mondrian with categorical attributes."""
 # Create a test DataFrame with categorical quasi-identifiers
     df = pl.DataFrame(
@@ -69,7 +69,7 @@ def test_mondrian_categorical_attributes():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_mixed_attributes():
+def test_mondrian_mixed_attributes() -> None:
     """Test Mondrian with mixed numerical and categorical attributes."""
 # Create a test DataFrame with mixed attribute types
     df = pl.DataFrame(
@@ -117,7 +117,7 @@ def test_mondrian_mixed_attributes():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_small_k():
+def test_mondrian_small_k() -> None:
     """Test Mondrian with k=1 (minimum group size)."""
     # Create a small test DataFrame
     df = pl.DataFrame({
@@ -135,7 +135,7 @@ def test_mondrian_small_k():
     assert all(count == 1 for count in result["count"].to_list())
 
 
-def test_mondrian_large_k():
+def test_mondrian_large_k() -> None:
     """Test Mondrian with k larger than the number of records."""
     # Create a small test DataFrame
     df = pl.DataFrame({

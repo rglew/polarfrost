@@ -6,7 +6,7 @@ import polars as pl
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
 
-def test_mondrian_string_comparison():
+def test_mondrian_string_comparison() -> None:
     """Test string comparison in span calculation."""
     df = pl.DataFrame(
         {
@@ -29,7 +29,7 @@ def test_mondrian_string_comparison():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_bytes_handling():
+def test_mondrian_bytes_handling() -> None:
     """Test handling of bytes data in aggregation."""
     df = pl.DataFrame(
         {
@@ -51,7 +51,7 @@ def test_mondrian_bytes_handling():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_single_partition():
+def test_mondrian_single_partition() -> None:
     """Test case where only one partition is possible."""
     df = pl.DataFrame(
         {
@@ -77,7 +77,7 @@ def test_mondrian_single_partition():
     assert result["gender"][0] == "M"
 
 
-def test_mondrian_numerical_precision():
+def test_mondrian_numerical_precision() -> None:
     """Test handling of numerical precision in span calculation."""
     df = pl.DataFrame(
         {
@@ -98,7 +98,7 @@ def test_mondrian_numerical_precision():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_mixed_numeric_types():
+def test_mondrian_mixed_numeric_types() -> None:
     """Test handling of mixed numeric types (int, float)."""
 # Explicitly specify dtypes to avoid inference issues
     df = pl.DataFrame(
@@ -121,7 +121,7 @@ def test_mondrian_mixed_numeric_types():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_large_dataset():
+def test_mondrian_large_dataset() -> None:
     """Test with a larger dataset to verify performance and correctness."""
     np.random.seed(42)
 

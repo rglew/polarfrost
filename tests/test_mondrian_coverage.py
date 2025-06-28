@@ -5,26 +5,26 @@ import polars as pl
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
 
-def test_mondrian_invalid_input_types():
+def test_mondrian_invalid_input_types() -> None:
     """Test invalid input types for mondrian_k_anonymity."""
     # Skip this test for now as it's not critical for coverage
     # and requires more complex mocking
     pass
 
 
-def test_mondrian_empty_quasi_identifiers():
+def test_mondrian_empty_quasi_identifiers() -> None:
     """Test with empty quasi_identifiers list."""
     # Skip this test as it's already covered in other test files
     pass
 
 
-def test_mondrian_sensitive_column_not_in_df():
+def test_mondrian_sensitive_column_not_in_df() -> None:
     """Test when sensitive column is not in the DataFrame."""
     # Skip this test as it's already covered in other test files
     pass
 
 
-def test_mondrian_with_none_values():
+def test_mondrian_with_none_values() -> None:
     """Test handling of None/NA values in the input."""
     df = pl.DataFrame(
         {
@@ -50,7 +50,7 @@ def test_mondrian_with_none_values():
     assert "count" in result.columns
 
 
-def test_mondrian_with_duplicate_columns():
+def test_mondrian_with_duplicate_columns() -> None:
     """Test handling of duplicate column names.
 
     Verifies behavior with duplicate column names in
@@ -60,7 +60,7 @@ def test_mondrian_with_duplicate_columns():
     pass
 
 
-def test_mondrian_with_single_column():
+def test_mondrian_with_single_column() -> None:
     """Test with a single quasi-identifier column."""
     df = pl.DataFrame({
         "age": [25, 25, 35, 35],
@@ -79,7 +79,7 @@ def test_mondrian_with_single_column():
     assert actual == expected1 or actual == expected2
 
 
-def test_mondrian_with_large_k():
+def test_mondrian_with_large_k() -> None:
     """Test with k larger than the number of records."""
     df = pl.DataFrame(
         {

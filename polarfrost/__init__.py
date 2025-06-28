@@ -29,7 +29,7 @@ try:
 except ImportError as e:
     import warnings
 
-    warnings.warn(f"Could not import all dependencies: {e}")
+    warnings.warn(f"Could not import all dependencies: {e}", stacklevel=2)
 
     # Dummy types for when dependencies are not available
     T = TypeVar('T')
@@ -60,7 +60,9 @@ except ImportError as e:
             'clustering_k_anonymity',
         }:
             _raise_import_error("polars and/or pyspark")
-        raise AttributeError(f"module 'polarfrost' has no attribute '{name}'")
+        msg = (f"No module named {name!r}. "
+               "Make sure to install the required dependencies.")
+        raise AttributeError(msg)
 
     __all__ = [
         "mondrian_k_anonymity",

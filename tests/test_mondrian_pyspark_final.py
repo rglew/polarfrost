@@ -1,6 +1,6 @@
 """Mock tests for PySpark implementation of Mondrian k-anonymity."""
 
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 
 class MockSparkConf:
@@ -8,7 +8,7 @@ class MockSparkConf:
 
     def __init__(self) -> None:
         """Initialize a new MockSparkConf with an empty configuration."""
-        self._options: dict[str, Any] = {}
+        self._options: Dict[str, Any] = {}
 
     def set(self, key: str, value: str) -> None:
         """Set a configuration option.

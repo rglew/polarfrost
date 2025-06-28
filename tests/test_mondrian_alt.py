@@ -9,7 +9,7 @@ import pytest
 from polarfrost.mondrian import mondrian_k_anonymity_alt
 
 
-def test_mondrian_alt_basic():
+def test_mondrian_alt_basic() -> None:
     """Test basic functionality with a simple dataset."""
     # Create test data
     data = {
@@ -25,7 +25,7 @@ def test_mondrian_alt_basic():
     df = pl.DataFrame(data).lazy()
 
     # Apply anonymization
-    result = mondrian_k_anonymity_alt(
+    result: pl.DataFrame = mondrian_k_anonymity_alt(
         df=df,
         quasi_identifiers=["age", "gender"],
         sensitive_column="survey_response",
@@ -41,23 +41,27 @@ def test_mondrian_alt_basic():
     assert "survey_response" in result.columns  # Sensitive column preserved
 
     # Check that QI columns were modified
+    # Create a DataFrame from the original data for comparison
+    original_df = pl.DataFrame(data)
+
+    # Get lists for comparison
+    result_ages = result["age"].to_list()
+    result_genders = result["gender"].to_list()
+    original_ages = original_df["age"].to_list()
+    original_genders = original_df["gender"].to_list()
+
+    # Verify that at least one value was modified
     assert any(
-        age != original
-        for age, original in zip(
-            result["age"].to_list(),
-            data["age"]
-        )
+        result_ages[i] != original_ages[i]
+        for i in range(len(result_ages))
     )
     assert any(
-        gender != original
-        for gender, original in zip(
-            result["gender"].to_list(),
-            data["gender"]
-        )
+        result_genders[i] != original_genders[i]
+        for i in range(len(result_genders))
     )
 
 
-def test_mondrian_alt_with_hierarchy():
+def test_mondrian_alt_with_hierarchy() -> None:
     """Test with hierarchical organization data."""
     # Create test data with parent-child org structure
     data = {
@@ -71,9 +75,9 @@ def test_mondrian_alt_with_hierarchy():
     }
     df = pl.DataFrame(data).lazy()
 
-# Apply anonymization with k=4
+    # Apply anonymization with k=4
     # (will require masking for org_id=2 which has 3 rows)
-    result = mondrian_k_anonymity_alt(
+    result: pl.DataFrame = mondrian_k_anonymity_alt(
         df=df,
         quasi_identifiers=["age", "gender"],
         sensitive_column="survey_response",
@@ -98,7 +102,7 @@ def test_mondrian_alt_with_hierarchy():
     )
 
 
-def test_mondrian_alt_preserve_columns():
+def test_mondrian_alt_preserve_columns() -> None:
     """Test that non-QI columns are preserved exactly."""
     data = {
         "org_id": [1, 1, 1, 1],
@@ -110,7 +114,7 @@ def test_mondrian_alt_preserve_columns():
     }
     df = pl.DataFrame(data).lazy()
 
-    result = mondrian_k_anonymity_alt(
+    result: pl.DataFrame = mondrian_k_anonymity_alt(
         df=df,
         quasi_identifiers=["age", "gender"],
         sensitive_column="survey_response",
@@ -119,14 +123,8 @@ def test_mondrian_alt_preserve_columns():
     ).collect()
 
     # Check that non-QI columns are preserved exactly
-    assert (
-        result["salary"].to_list() ==
-        data["salary"]
-    )
-    assert (
-        result["org_id"].to_list() ==
-        data["org_id"]
-    )
+    assert result["salary"].to_list() == data["salary"]
+    assert result["org_id"].to_list() == data["org_id"]
 
 
 if __name__ == "__main__":

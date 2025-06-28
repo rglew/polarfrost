@@ -5,7 +5,7 @@ import polars as pl
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
 
-def test_mondrian_single_record():
+def test_mondrian_single_record() -> None:
     """Test with a single record - should return as is."""
     df = pl.DataFrame(
         {
@@ -27,7 +27,7 @@ def test_mondrian_single_record():
     assert result["count"][0] == 1
 
 
-def test_mondrian_all_identical_records():
+def test_mondrian_all_identical_records() -> None:
     """Test with all records being identical."""
     df = pl.DataFrame(
         {
@@ -49,7 +49,7 @@ def test_mondrian_all_identical_records():
     assert result["count"][0] == 4
 
 
-def test_mondrian_mixed_data_types():
+def test_mondrian_mixed_data_types() -> None:
     """Test with mixed data types including None values."""
     df = pl.DataFrame(
         {
@@ -84,7 +84,7 @@ def test_mondrian_mixed_data_types():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_special_characters():
+def test_mondrian_special_characters() -> None:
     """Test with special characters in string fields."""
     df = pl.DataFrame(
         {
@@ -112,7 +112,7 @@ def test_mondrian_special_characters():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_mondrian_large_k_value():
+def test_mondrian_large_k_value() -> None:
     """Test with k larger than the number of records."""
     df = pl.DataFrame(
         {
@@ -134,7 +134,7 @@ def test_mondrian_large_k_value():
     assert result["count"][0] == len(df)
 
 
-def test_mondrian_numeric_as_categorical():
+def test_mondrian_numeric_as_categorical() -> None:
     """Test treating numeric columns as categorical."""
     df = pl.DataFrame(
         {

@@ -65,13 +65,8 @@ def clustering_k_anonymity(
         raise ValueError("Input DataFrame cannot be empty")
 
     # Validate k is a positive integer
-    if (
-        not isinstance(k, (int, str)) or
-        (isinstance(k, str) and not k.isdigit()) or
-        int(k) < 1
-    ):
+    if not isinstance(k, int) or k < 1:
         raise ValueError("k must be a positive integer")
-    k = int(k)  # Convert to int if it's a string of digits
 
     # Get all columns that will be used
     all_columns = set(quasi_identifiers + [sensitive_column])

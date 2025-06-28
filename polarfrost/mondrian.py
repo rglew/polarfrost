@@ -40,13 +40,8 @@ def mondrian_k_anonymity_polars(
         raise ValueError("Input DataFrame cannot be empty")
 
     # Validate k is a positive integer
-    if (
-        not isinstance(k, (int, str))
-        or (isinstance(k, str) and not k.isdigit())
-        or int(k) < 1
-    ):
+    if not isinstance(k, int) or k < 1:
         raise ValueError("k must be a positive integer")
-    k = int(k)  # Convert to int if it's a string of digits
 
     # Initialize partitions with the full dataset
     partitions = [df]
@@ -159,7 +154,7 @@ def mondrian_k_anonymity_polars(
                 # Ensure we have valid numeric values
                 if min_val is None or max_val is None:
                     # Handle null values
-                    row[col] = "*"  # type: ignore[assignment]
+                    row[col] = "*"
                 else:
                     # Convert to string, handling bytes and other types
                     # Handle different types for string conversion
@@ -233,9 +228,9 @@ def mondrian_k_anonymity_spark(
         categorical = []
 
     # Define the UDF with proper type hints
-    @pandas_udf(
+    @pandas_udf(  # type: ignore[misc]
         returnType=schema,
-        functionType=PandasUDFType.GROUPED_MAP  # type: ignore[misc]
+        functionType=PandasUDFType.GROUPED_MAP
     )
     def mondrian_partition(pdf: pd.DataFrame) -> pd.DataFrame:
         """Process a partition of data using Mondrian k-anonymity.
@@ -275,7 +270,7 @@ def mondrian_k_anonymity_spark(
             split_col = max(
                 spans.items(),
                 key=lambda x: x[1]
-            )[0]  # type: ignore
+            )[0]
 
             # If no split possible, add to results
             if spans.get(split_col, 0) <= 0:
@@ -283,6 +278,9 @@ def mondrian_k_anonymity_spark(
                 continue
 
             # Split on the chosen column
+            left = None
+            right = None
+
             if split_col in categorical:
                 # For categorical, split on median value
                 value_counts = part[split_col].value_counts()
@@ -291,18 +289,18 @@ def mondrian_k_anonymity_spark(
                     mask = part[split_col] == split_val
                     left = part[mask]
                     right = part[~mask]
-                else:
-                    result.append(part)
-                    continue
             else:
                 # For numerical, split on median
                 median_val = part[split_col].median()
                 if pd.notna(median_val):
                     left = part[part[split_col] <= median_val]
                     right = part[part[split_col] > median_val]
-                else:
-                    result.append(part)
-                    continue
+
+            # If we couldn't split the partition, add it to results
+            if (left is None or right is None or  # noqa: W503,W504
+                    len(left) == 0 or len(right) == 0):
+                result.append(part)
+                continue
 
             # Check if both partitions satisfy k-anonymity
             if len(left) >= k and len(right) >= k:
@@ -345,7 +343,7 @@ def mondrian_k_anonymity_spark(
     # Apply the UDF with explicit schema
     result_df = df.groupBy().applyInPandas(
         mondrian_partition,
-        schema=schema  # type: ignore
+        schema=schema
     )
     return result_df
 
@@ -401,9 +399,26 @@ def _generalize_partition(
     categorical: List[str],
     mask_value: str = "masked",
 ) -> pl.DataFrame:
-    """Generalize a partition by applying Mondrian-style generalization."""
-    """Generalize a partition by applying Mondrian-style generalization."""
+    """Generalize a partition by applying Mondrian-style generalization.
+
+    Args:
+        partition: Input DataFrame to generalize
+        quasi_identifiers: List of column names that are quasi-identifiers
+        categorical: List of categorical column names
+        mask_value: Value to use for masking categorical values
+
+    Returns:
+        Generalized DataFrame with quasi-identifiers masked or ranged
+    """
     result = partition.clone()
+
+    def to_str(val: Any) -> str:
+        """Convert a value to string, handling None and bytes."""
+        if val is None:
+            return ""
+        if isinstance(val, bytes):
+            return val.decode('utf-8', errors='replace')
+        return str(val)
 
     for col in quasi_identifiers:
         is_cat = col in categorical
@@ -415,14 +430,6 @@ def _generalize_partition(
             # For numerical, create a range
             min_val = result[col].min()
             max_val = result[col].max()
-            # Convert to string, handling bytes and other types
-
-            def to_str(val):
-                if val is None:
-                    return ""
-                if isinstance(val, bytes):
-                    return val.decode('utf-8', errors='replace')
-                return str(val)
 
             min_str = to_str(min_val)
             max_str = to_str(max_val)
@@ -480,14 +487,12 @@ def mondrian_k_anonymity_alt(
 
     # Check if all specified columns exist
     all_columns_to_check = (
-        quasi_identifiers +
-        [sensitive_column] +
-        (group_columns or []) +
-        (categorical or [])
+        quasi_identifiers + [sensitive_column] + (
+            group_columns or []) + (categorical or [])
     )
     for col in set(all_columns_to_check):
         if col not in schema:
-            raise ValueError(f"Column '{col}' not found in DataFrame")
+            raise ValueError(f"Column {col!r} not found in DataFrame")
 
     # Ensure no overlap between group_columns and QIs
     if any(col in quasi_identifiers for col in group_columns):

@@ -9,7 +9,7 @@ import polars as pl
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
 
-def test_mixed_data_types():
+def test_mixed_data_types() -> None:
     """Test with mixed data types including None values."""
     df = pl.DataFrame(
         {
@@ -35,7 +35,7 @@ def test_mixed_data_types():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_single_record_partitions():
+def test_single_record_partitions() -> None:
     """Test behavior with k=1 where each record could be its own partition."""
     df = pl.DataFrame(
         {
@@ -58,7 +58,7 @@ def test_single_record_partitions():
     assert all(count == 1 for count in result["count"].to_list())
 
 
-def test_all_identical_records():
+def test_all_identical_records() -> None:
     """Test when all records are identical."""
     df = pl.DataFrame(
         {
@@ -80,7 +80,7 @@ def test_all_identical_records():
     assert result["count"][0] == 4
 
 
-def test_numerical_precision():
+def test_numerical_precision() -> None:
     """Test handling of floating point precision in numerical data."""
     df = pl.DataFrame({
         "value": [1.1, 1.1000001, 2.2, 2.2000001],
@@ -99,7 +99,7 @@ def test_numerical_precision():
     assert all(count >= 2 for count in result["count"].to_list())
 
 
-def test_large_k_value():
+def test_large_k_value() -> None:
     """Test behavior when k is larger than the number of records."""
     df = pl.DataFrame(
         {
@@ -124,7 +124,7 @@ def test_large_k_value():
     assert result["count"][0] == 4
 
 
-def test_performance_large_dataset():
+def test_performance_large_dataset() -> None:
     """Test performance with a larger dataset."""
     # Generate a larger dataset with 1000 records
     np.random.seed(42)

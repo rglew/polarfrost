@@ -1,6 +1,6 @@
 """Tests for edge cases in the Mondrian k-anonymity implementation."""
 
-from typing import cast
+from typing import List, cast
 
 import polars as pl
 import pytest
@@ -68,7 +68,7 @@ def test_mondrian_single_column() -> None:
     # Using shape[0] for DataFrame compatibility
     assert result.shape[0] > 0
     # Each group should have at least k records
-    count_values: list[int] = result["count"].to_list()
+    count_values: List[int] = result["count"].to_list()
     assert all(count >= 2 for count in count_values)
 
 
@@ -114,7 +114,7 @@ def test_mondrian_with_nulls() -> None:
     # Using shape[0] for DataFrame compatibility
     assert result.shape[0] > 0
     # All groups should satisfy k-anonymity
-    count_values: list[int] = result["count"].to_list()
+    count_values: List[int] = result["count"].to_list()
     assert all(count >= 2 for count in count_values)
 
 
@@ -128,19 +128,19 @@ def test_mondrian_lazyframe_input() -> None:
         }
     ).lazy()
 
-    result = cast(pl.DataFrame, mondrian_k_anonymity_polars(
+    result = mondrian_k_anonymity_polars(
         df,
         quasi_identifiers=["age", "gender"],
         sensitive_column="income",
         k=2,
-        categorical=["gender"],
-    ))
+        categorical=["gender"]
+    )
 
     # Should complete without errors
     # Using shape[0] for DataFrame compatibility
     assert result.shape[0] > 0
     # All groups should satisfy k-anonymity
-    count_values: list[int] = result["count"].to_list()
+    count_values: List[int] = result["count"].to_list()
     assert all(count >= 2 for count in count_values)
 
 

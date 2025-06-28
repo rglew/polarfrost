@@ -6,7 +6,7 @@ import pytest
 from polarfrost.clustering import clustering_k_anonymity
 
 
-def test_clustering_empty_dataframe():
+def test_clustering_empty_dataframe() -> None:
     """Test clustering with an empty DataFrame."""
     # Create an empty DataFrame
     df = pl.DataFrame({"age": [], "gender": [], "condition": []})
@@ -22,7 +22,7 @@ def test_clustering_empty_dataframe():
         )
 
 
-def test_clustering_invalid_k():
+def test_clustering_invalid_k() -> None:
     """Test clustering with invalid k values."""
     # Create a test DataFrame
     df = pl.DataFrame(
@@ -64,7 +64,7 @@ def test_clustering_invalid_k():
         )
 
 
-def test_clustering_missing_columns():
+def test_clustering_missing_columns() -> None:
     """Test clustering with missing columns."""
     # Create a test DataFrame
     df = pl.DataFrame(
@@ -96,7 +96,7 @@ def test_clustering_missing_columns():
         )
 
 
-def test_clustering_unsupported_method():
+def test_clustering_unsupported_method() -> None:
     """Test clustering with an unsupported method."""
     # Create a test DataFrame
     df = pl.DataFrame(
@@ -120,7 +120,7 @@ def test_clustering_unsupported_method():
         )
 
 
-def test_clustering_with_lazyframe():
+def test_clustering_with_lazyframe() -> None:
     """Test that clustering works with LazyFrame input."""
     # Create a test LazyFrame
     df = pl.DataFrame(
@@ -143,7 +143,7 @@ def test_clustering_with_lazyframe():
         )
 
 
-def test_clustering_with_none_values():
+def test_clustering_with_none_values() -> None:
     """Test clustering with None/NA values in the data."""
     # Create a test DataFrame with None values
     df = pl.DataFrame(

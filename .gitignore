@@ -26,6 +26,7 @@ venv/
 env/
 ENV/
 test_env/
+venv311/
 
 # IDE
 .idea/
