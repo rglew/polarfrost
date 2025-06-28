@@ -3,9 +3,12 @@ name: Python CI with Coverage
 on:
   push:
     branches: [ main ]
+    # Only ignore non-code files
     paths-ignore:
       - '**.md'
       - '.github/ISSUE_TEMPLATE/**'
+      - 'docs/**'
+      - 'examples/**'
   pull_request:
     branches: [ main ]
   schedule:
