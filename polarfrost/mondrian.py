@@ -341,3 +341,156 @@ def mondrian_k_anonymity(
     raise ValueError(
         "Input df must be a polars.DataFrame, polars.LazyFrame, or pyspark.sql.DataFrame"
     )
+
+
+def _generalize_partition(
+    partition: pl.DataFrame,
+    quasi_identifiers: List[str],
+    categorical: List[str],
+    mask_value: str = "masked"
+) -> pl.DataFrame:
+    """Generalize a partition by applying Mondrian-style generalization."""
+    result = partition.clone()
+    
+    for col in quasi_identifiers:
+        is_cat = col in categorical
+        if is_cat:
+            # For categoricals, use mask if multiple values exist
+            if result[col].n_unique() > 1:
+                result = result.with_columns(pl.lit(mask_value).alias(col))
+        else:
+            # For numerical, create a range
+            min_val = result[col].min()
+            max_val = result[col].max()
+            if min_val == max_val:
+                result = result.with_columns(pl.lit(min_val).alias(col))
+            else:
+                result = result.with_columns(pl.lit(f"[{min_val}-{max_val}]").alias(col))
+    
+    return result
+
+
+def mondrian_k_anonymity_alt(
+    df: pl.LazyFrame,
+    quasi_identifiers: List[str],
+    sensitive_column: str,
+    k: int,
+    categorical: Optional[List[str]] = None,
+    mask_value: str = "masked",
+    group_columns: Optional[List[str]] = None,
+) -> pl.LazyFrame:
+    """
+    Alternative Mondrian k-anonymity that preserves the original row count.
+    
+    Args:
+        df: Input LazyFrame
+        quasi_identifiers: List of column names that are quasi-identifiers
+        sensitive_column: Name of the sensitive column
+        k: Anonymity parameter (minimum group size)
+        categorical: List of categorical column names
+        mask_value: Value to use for masking small groups
+        group_columns: Additional columns to use for grouping but keep unchanged
+        
+    Returns:
+        Anonymized LazyFrame with same row count as input
+    """
+    if not isinstance(df, pl.LazyFrame):
+        raise ValueError("Input must be a Polars LazyFrame")
+    
+    # Get schema to preserve column order
+    schema = df.schema
+    all_columns = list(schema.keys())
+    
+    # Initialize parameters
+    categorical = categorical or []
+    group_columns = group_columns or []
+    
+    # Validate inputs
+    if k < 1:
+        raise ValueError("k must be a positive integer")
+    
+    # Check if all specified columns exist
+    for col in set(quasi_identifiers + [sensitive_column] + group_columns + categorical):
+        if col not in schema:
+            raise ValueError(f"Column '{col}' not found in DataFrame")
+    
+    # Ensure no overlap between group_columns and QIs
+    if any(col in quasi_identifiers for col in group_columns):
+        raise ValueError("group_columns cannot overlap with quasi_identifiers")
+    
+    # Collect the data once
+    df_collected = df.collect()
+    
+    # Process each group
+    if group_columns:
+        # Get unique group combinations
+        groups = df_collected.select(group_columns).unique()
+        
+        results = []
+        
+        for group in groups.rows(named=True):
+            # Filter current group
+            condition = pl.lit(True)
+            for col, val in group.items():
+                condition = condition & (pl.col(col) == val)
+            
+            group_df = df_collected.filter(condition)
+            group_size = len(group_df)
+            
+            if group_size < k:
+                # Mask QIs and sensitive column for small groups
+                masked_cols = {}
+                # Mask all QIs
+                for col in quasi_identifiers:
+                    if col in categorical:
+                        masked_cols[col] = pl.lit(mask_value)
+                # Always mask the sensitive column for small groups
+                masked_cols[sensitive_column] = pl.lit(mask_value)
+                
+                if masked_cols:
+                    group_df = group_df.with_columns(**masked_cols)
+                
+                results.append(group_df)
+            else:
+                # Apply generalization to QIs
+                if quasi_identifiers:
+                    group_df = _generalize_partition(
+                        group_df,
+                        quasi_identifiers,
+                        categorical,
+                        mask_value
+                    )
+                results.append(group_df)
+        
+        # Combine results
+        result_df = pl.concat(results)
+    else:
+        # Process entire dataset as one group
+        if len(df_collected) < k:
+            # Mask all QIs and sensitive column
+            masked_cols = {}
+            # Mask all QIs
+            for col in quasi_identifiers:
+                if col in categorical:
+                    masked_cols[col] = pl.lit(mask_value)
+            # Always mask the sensitive column for small groups
+            masked_cols[sensitive_column] = pl.lit(mask_value)
+            
+            if masked_cols:
+                result_df = df_collected.with_columns(**masked_cols)
+            else:
+                result_df = df_collected
+        else:
+            # Apply generalization to QIs
+            if quasi_identifiers:
+                result_df = _generalize_partition(
+                    df_collected,
+                    quasi_identifiers,
+                    categorical,
+                    mask_value
+                )
+            else:
+                result_df = df_collected
+    
+    # Ensure original column order and return as LazyFrame
+    return result_df.select(all_columns).lazy()

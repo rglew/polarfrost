@@ -6,12 +6,13 @@ including the Mondrian algorithm, with support for both local (Polars)
 and distributed (PySpark) processing.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 # Import main functions
 try:
     from .mondrian import (
         mondrian_k_anonymity,
+        mondrian_k_anonymity_alt,
         mondrian_k_anonymity_polars,
         mondrian_k_anonymity_spark,
     )
@@ -19,6 +20,7 @@ try:
 
     __all__ = [
         "mondrian_k_anonymity",
+        "mondrian_k_anonymity_alt",
         "mondrian_k_anonymity_polars",
         "mondrian_k_anonymity_spark",
         "clustering_k_anonymity",

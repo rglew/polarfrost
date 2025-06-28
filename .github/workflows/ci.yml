@@ -44,14 +44,9 @@ jobs:
     
     - name: Upload coverage to Codecov
       if: matrix.python-version == '3.11'  # Only upload coverage once
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-        verbose: true
 
   lint:
     name: Lint with pre-commit

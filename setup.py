@@ -7,7 +7,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="polarfrost",
-    version="0.1.0",
+    version="0.2.0",
     packages=find_packages(exclude=["tests*"]),
     python_requires=">=3.8",
     install_requires=[

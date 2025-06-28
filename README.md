@@ -76,6 +76,10 @@ pytest --cov=polarfrost --cov-report=term-missing
 
 ### Basic Usage with Polars (Mondrian Algorithm)
 
+#### Standard Mondrian k-Anonymity
+
+The standard implementation groups records and returns one representative row per group:
+
 ```python
 import polars as pl
 from polarfrost import mondrian_k_anonymity
@@ -100,6 +104,45 @@ anonymized = mondrian_k_anonymity(
 )
 
 print(anonymized)
+
+### Alternative Implementation with Row Preservation
+
+For use cases where you need to preserve the original number of rows (1:1 input-output mapping), use `mondrian_k_anonymity_alt`:
+
+```python
+from polarfrost import mondrian_k_anonymity_alt
+
+# Apply k-anonymity while preserving row count
+anonymized = mondrian_k_anonymity_alt(
+    df.lazy(),  # Must be a LazyFrame
+    quasi_identifiers=["age", "gender", "zipcode"],
+    sensitive_column="medical_condition",
+    k=2,
+    categorical=["gender", "zipcode"],
+    group_columns=["org_id"]  # Optional: group by organization
+)
+
+# Collect the results (since we started with a LazyFrame)
+anonymized_df = anonymized.collect()
+print(anonymized_df)
+```
+
+#### Key Differences from Standard Implementation
+
+1. **Row Preservation**: Maintains original row count (1:1 input-output mapping)
+2. **In-Place Anonymization**: Modifies QI columns directly instead of creating new ones
+3. **Group Processing**: Supports hierarchical data through `group_columns`
+4. **Small Group Handling**: Masks sensitive data in groups smaller than k
+5. **LazyFrame Requirement**: Input must be a Polars LazyFrame for efficiency
+
+#### When to Use Which Version
+
+- Use `mondrian_k_anonymity` when you need grouped results and don't need to maintain row order
+- Use `mondrian_k_anonymity_alt` when you need to:
+  - Preserve the original number of rows
+  - Maintain relationships with other tables through foreign keys
+  - Process hierarchical data with different k-values per group
+  - Keep non-QI columns unchanged
 ```
 
 ### Using PySpark for Distributed Processing (Mondrian Algorithm)
