@@ -3,13 +3,18 @@ Efficient Mondrian k-Anonymity implementation using Polars and PySpark.
 Compatible with local (Polars) and Databricks/Spark (PySpark) environments.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, TypeVar
 
+import pandas as pd
 import polars as pl
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 
 if TYPE_CHECKING:
     from pyspark.sql import DataFrame as SparkDataFrame
     from pyspark.sql.types import StructType
+
+# Type variable for pandas_udf return type
+T = TypeVar('T', bound=pd.DataFrame)
 
 
 # ------------------------- POLARS VERSION -------------------------
@@ -209,8 +214,6 @@ def mondrian_k_anonymity_spark(
     Returns:
         Anonymized DataFrame with generalized quasi-identifiers
     """
-    import pandas as pd
-    from pyspark.sql.functions import pandas_udf, PandasUDFType
 
     # Validate k parameter first
     if not isinstance(k, int) or k <= 0:
