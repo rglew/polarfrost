@@ -97,7 +97,7 @@ def test_clustering_invalid_input_type() -> None:
         ValueError, match="Input must be a Polars DataFrame or LazyFrame"
     ):
         clustering_k_anonymity(
-            "not a dataframe", ["age"], "income", k=2
+            "not a dataframe", ["age"], "income", k=2  # type: ignore[arg-type]
         )
 
     # Test empty quasi_identifiers list

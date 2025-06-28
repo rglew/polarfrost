@@ -228,10 +228,10 @@ def mondrian_k_anonymity_spark(
         categorical = []
 
     # Define the UDF with proper type hints
-    @pandas_udf(
+    @pandas_udf(  # type: ignore[misc]
         returnType=schema,
         functionType=PandasUDFType.GROUPED_MAP,
-    )  # type: ignore[no-untyped-call]
+    )
     def mondrian_partition(pdf: pd.DataFrame) -> pd.DataFrame:
         """Process a partition of data using Mondrian k-anonymity.
 
