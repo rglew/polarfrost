@@ -2,7 +2,7 @@
 Clustering-based k-anonymity implementation using Polars.
 """
 
-from typing import List, Optional, TypeVar, Union, cast
+from typing import List, Optional, TypeVar, Union
 
 import polars as pl
 
@@ -33,7 +33,8 @@ def clustering_k_anonymity(
         sensitive_column: Column containing sensitive information
         k: Minimum group size for k-anonymity
         categorical: List of categorical column names (default: None)
-        method: Clustering method ('fcbg', 'rsc', or 'random') (default: 'fcbg')
+        method: Clustering method ('fcbg', 'rsc', or 'random')
+            (default: 'fcbg')
 
     Returns:
         Anonymized DataFrame with generalized quasi-identifiers
@@ -59,14 +60,15 @@ def clustering_k_anonymity(
     # Ensure we're working with a LazyFrame
     lazy_df = df.lazy() if not isinstance(df, pl.LazyFrame) else df
     first_row = lazy_df.limit(1).collect()
+
     if first_row.is_empty():
         raise ValueError("Input DataFrame cannot be empty")
 
     # Validate k is a positive integer
     if (
-        not isinstance(k, (int, str)) 
-        or (isinstance(k, str) and not k.isdigit()) 
-        or int(k) < 1
+        not isinstance(k, (int, str)) or
+        (isinstance(k, str) and not k.isdigit()) or
+        int(k) < 1
     ):
         raise ValueError("k must be a positive integer")
     k = int(k)  # Convert to int if it's a string of digits
@@ -76,16 +78,16 @@ def clustering_k_anonymity(
     if categorical is not None:
         all_columns.update(categorical)
 
-    # Check if columns exist
+    # Prepare data for clustering
     if isinstance(df, pl.LazyFrame):
         schema_names = df.collect_schema().names()
         missing_columns = [
-            col for col in all_columns 
+            col for col in all_columns
             if col not in schema_names
         ]
     else:
         missing_columns = [
-            col for col in all_columns 
+            col for col in all_columns
             if col not in df.columns
         ]
     if missing_columns:
@@ -96,4 +98,6 @@ def clustering_k_anonymity(
         raise ValueError(f"Unsupported clustering method: {method}")
 
     # For now, just raise NotImplementedError
-    raise NotImplementedError("Clustering k-anonymity will be implemented soon")
+    raise NotImplementedError(
+        "Clustering k-anonymity will be implemented soon"
+    )

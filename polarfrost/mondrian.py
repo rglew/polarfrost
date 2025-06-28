@@ -73,9 +73,10 @@ def mondrian_k_anonymity_polars(
                 spans[col] = n_unique
             else:
                 # For numerical, use range as span
-                stats = part.select(
-                    [pl.col(col).min().alias("min"), pl.col(col).max().alias("max")]
-                ).collect()
+                stats = part.select([
+                    pl.col(col).min().alias("min"),
+                    pl.col(col).max().alias("max")
+                ]).collect()
                 col_min = stats[0, "min"]
                 col_max = stats[0, "max"]
 
@@ -111,9 +112,9 @@ def mondrian_k_anonymity_polars(
         # Split the partition
         if split_col in categorical:
             # For categorical, split on unique values
-            uniq_vals = (
-                part.select(pl.col(split_col).unique()).collect().to_series().to_list()
-            )
+            uniq_vals = part.select(
+                pl.col(split_col).unique()
+            ).collect().to_series().to_list()
             mid = len(uniq_vals) // 2
             left_vals = set(uniq_vals[:mid])
             right_vals = set(uniq_vals[mid:])
@@ -148,7 +149,8 @@ def mondrian_k_anonymity_polars(
             if col in categorical:
                 # For categorical, use set of unique values
                 unique_vals = part_df[col].unique()
-                row[col] = ",".join(sorted(str(v) for v in unique_vals))
+                sorted_vals = sorted(str(v) for v in unique_vals)
+                row[col] = ",".join(sorted_vals)
             else:
                 # For numerical, use range
                 min_val: Any = part_df[col].min()
@@ -156,7 +158,8 @@ def mondrian_k_anonymity_polars(
 
                 # Ensure we have valid numeric values
                 if min_val is None or max_val is None:
-                    row[col] = "*"  # type: ignore[assignment]  # Handle null values
+                    # Handle null values
+                    row[col] = "*"  # type: ignore[assignment]
                 else:
                     # Convert to string, handling bytes and other types
                     # Handle different types for string conversion
@@ -179,7 +182,8 @@ def mondrian_k_anonymity_polars(
 
         # Add sensitive values and count
         sensitive_vals = part_df[sensitive_column].unique()
-        row[sensitive_column] = ",".join(sorted(str(v) for v in sensitive_vals))
+        sorted_sensitive = sorted(str(v) for v in sensitive_vals)
+        row[sensitive_column] = ",".join(sorted_sensitive)
         # Store count as integer to match the expected type
         row["count"] = int(part_df.height)
         agg_rows.append(row)
@@ -229,13 +233,16 @@ def mondrian_k_anonymity_spark(
         categorical = []
 
     # Define the UDF with proper type hints
-    @pandas_udf(returnType=schema, functionType=PandasUDFType.GROUPED_MAP)  # type: ignore[misc]
+    @pandas_udf(
+        returnType=schema,
+        functionType=PandasUDFType.GROUPED_MAP  # type: ignore[misc]
+    )
     def mondrian_partition(pdf: pd.DataFrame) -> pd.DataFrame:
         """Process a partition of data using Mondrian k-anonymity.
-        
+
         Args:
             pdf: Input pandas DataFrame partition
-            
+
         Returns:
             Processed DataFrame with k-anonymity applied
         """
@@ -265,7 +272,10 @@ def mondrian_k_anonymity_spark(
                     )
 
             # Find the attribute with maximum span
-            split_col = max(spans.items(), key=lambda x: x[1])[0]  # type: ignore
+            split_col = max(
+                spans.items(),
+                key=lambda x: x[1]
+            )[0]  # type: ignore
 
             # If no split possible, add to results
             if spans.get(split_col, 0) <= 0:
@@ -311,24 +321,31 @@ def mondrian_k_anonymity_spark(
             for col in quasi_identifiers:
                 if col in categorical:
                     # For categorical, use set of unique values
-                    row[col] = ",".join(sorted(map(str, part[col].unique())))
+                    unique_vals = sorted(map(str, part[col].unique()))
+                    row[col] = ",".join(unique_vals)
                 else:
                     # For numerical, use range
-                    row[col] = f"{part[col].min()}-{part[col].max()}"
+                    min_val = part[col].min()
+                    max_val = part[col].max()
+                    range_str = f"{min_val}-{max_val}"
+                    row[col] = range_str
 
             # Add sensitive values and count
-            row[sensitive_column] = ",".join(
-                sorted(str(v) for v in part[sensitive_column].unique())
+            unique_sensitive = sorted(
+                str(v)
+                for v in part[sensitive_column].unique()
             )
+            row[sensitive_column] = ",".join(unique_sensitive)
             # Store count as string to match the expected type
-            row["count"] = str(int(len(part)))
+            row["count"] = str(len(part))
             agg_rows.append(row)
 
         return pd.DataFrame(agg_rows)
 
     # Apply the UDF with explicit schema
     result_df = df.groupBy().applyInPandas(
-        mondrian_partition, schema=schema  # type: ignore
+        mondrian_partition,
+        schema=schema  # type: ignore
     )
     return result_df
 
@@ -342,8 +359,9 @@ def mondrian_k_anonymity(
     categorical: Optional[List[str]] = None,
     schema: Optional["StructType"] = None,
 ) -> Union[pl.DataFrame, "SparkDataFrame"]:
-    """
-    Dispatcher: Use Polars or PySpark Mondrian k-anonymity depending on input type.
+    """Dispatcher for Mondrian k-anonymity.
+
+    Uses Polars or PySpark implementation based on input type.
 
     Args:
         df: Input DataFrame (Polars or PySpark)
@@ -372,7 +390,8 @@ def mondrian_k_anonymity(
         )
 
     raise ValueError(
-        "Input df must be a polars.DataFrame, polars.LazyFrame, or pyspark.sql.DataFrame"
+        "Input df must be a polars.DataFrame, "
+        "polars.LazyFrame, or pyspark.sql.DataFrame"
     )
 
 
@@ -382,6 +401,7 @@ def _generalize_partition(
     categorical: List[str],
     mask_value: str = "masked",
 ) -> pl.DataFrame:
+    """Generalize a partition by applying Mondrian-style generalization."""
     """Generalize a partition by applying Mondrian-style generalization."""
     result = partition.clone()
 
@@ -396,16 +416,17 @@ def _generalize_partition(
             min_val = result[col].min()
             max_val = result[col].max()
             # Convert to string, handling bytes and other types
+
             def to_str(val):
                 if val is None:
                     return ""
                 if isinstance(val, bytes):
                     return val.decode('utf-8', errors='replace')
                 return str(val)
-                
+
             min_str = to_str(min_val)
             max_str = to_str(max_val)
-            
+
             if min_val == max_val:
                 result = result.with_columns(pl.lit(min_str).alias(col))
             else:
@@ -435,7 +456,8 @@ def mondrian_k_anonymity_alt(
         k: Anonymity parameter (minimum group size)
         categorical: List of categorical column names
         mask_value: Value to use for masking small groups
-        group_columns: Additional columns to use for grouping but keep unchanged
+        group_columns: Additional columns to use for grouping but keep
+            unchanged
 
     Returns:
         Anonymized LazyFrame with same row count as input
@@ -453,12 +475,17 @@ def mondrian_k_anonymity_alt(
 
     # Validate inputs
     if k < 1:
-        raise ValueError("k must be a positive integer")
+        msg = "k must be a positive integer"
+        raise ValueError(msg)
 
     # Check if all specified columns exist
-    for col in set(
-        quasi_identifiers + [sensitive_column] + group_columns + categorical
-    ):
+    all_columns_to_check = (
+        quasi_identifiers +
+        [sensitive_column] +
+        (group_columns or []) +
+        (categorical or [])
+    )
+    for col in set(all_columns_to_check):
         if col not in schema:
             raise ValueError(f"Column '{col}' not found in DataFrame")
 
@@ -503,7 +530,10 @@ def mondrian_k_anonymity_alt(
                 # Apply generalization to QIs
                 if quasi_identifiers:
                     group_df = _generalize_partition(
-                        group_df, quasi_identifiers, categorical, mask_value
+                        group_df,
+                        quasi_identifiers,
+                        categorical or [],
+                        mask_value
                     )
                 results.append(group_df)
 
@@ -529,7 +559,10 @@ def mondrian_k_anonymity_alt(
             # Apply generalization to QIs
             if quasi_identifiers:
                 result_df = _generalize_partition(
-                    df_collected, quasi_identifiers, categorical, mask_value
+                    df_collected,
+                    quasi_identifiers,
+                    categorical or [],
+                    mask_value
                 )
             else:
                 result_df = df_collected
