@@ -13,8 +13,10 @@ if TYPE_CHECKING:
     from pyspark.sql import DataFrame as SparkDataFrame
     from pyspark.sql.types import StructType
 
-# Type variable for pandas_udf return type
+# Type variables for pandas_udf return types
 T = TypeVar('T', bound=pd.DataFrame)
+PandasDataFrameT = TypeVar('PandasDataFrameT', bound=pd.DataFrame)
+ResultDataFrameT = TypeVar('ResultDataFrameT', bound=pd.DataFrame)
 
 
 # ------------------------- POLARS VERSION -------------------------
