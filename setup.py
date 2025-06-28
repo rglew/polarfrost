@@ -1,5 +1,6 @@
-from setuptools import setup, find_packages
 import pathlib
+
+from setuptools import find_packages, setup
 
 # Read the contents of README.md
 this_directory = pathlib.Path(__file__).parent

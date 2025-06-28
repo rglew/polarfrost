@@ -3,8 +3,10 @@ Test the Mondrian k-anonymity implementation with sample data.
 """
 
 import os
+
 import polars as pl
 import pytest
+
 from polarfrost import mondrian_k_anonymity
 
 

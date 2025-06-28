@@ -209,7 +209,7 @@ def mondrian_k_anonymity(
 ) -> Union[pl.DataFrame, "pyspark.sql.DataFrame"]:
     """
     Apply Mondrian k-anonymity to the input data.
-    
+
     Args:
         df: Input DataFrame (Polars or PySpark)
         quasi_identifiers: List of column names that are quasi-identifiers
@@ -217,7 +217,7 @@ def mondrian_k_anonymity(
         k: Anonymity parameter (minimum group size)
         categorical: List of categorical column names
         schema: Schema for PySpark output (required for PySpark)
-        
+
     Returns:
         Anonymized DataFrame with generalized quasi-identifiers
     """
@@ -253,7 +253,7 @@ The Mondrian algorithm is a multidimensional partitioning approach that recursiv
 
 1. **Initialization**: Start with the entire dataset and the list of quasi-identifiers (QIs).
 
-2. **Partitioning**: 
+2. **Partitioning**:
    - Find the dimension (QI) with the widest range of values
    - Find the median value of that dimension
    - Split the data into two partitions at the median
@@ -470,7 +470,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
    ```bash
    # Using Poetry (recommended)
    poetry install
-   
+
    # Or using pip
    pip install -e .[dev]
    ```

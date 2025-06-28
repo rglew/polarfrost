@@ -1,5 +1,7 @@
 import os
+
 import polars as pl
+
 from polarfrost.mondrian import mondrian_k_anonymity
 
 

@@ -11,35 +11,35 @@ jobs:
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11']
         os: [ubuntu-latest]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-    
+
     - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
         pip install build twine
-    
+
     - name: Install package dependencies
       run: |
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
-    
+
     - name: Run tests
       run: |
         python -m pytest tests/ -v
-    
+
     - name: Build package
       if: matrix.python-version == '3.11'  # Only build once
       run: |
         python -m build
-    
+
     - name: Publish package to PyPI
       if: matrix.python-version == '3.11'  # Only publish once
       uses: pypa/gh-action-pypi-publish@release/v1
