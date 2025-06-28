@@ -9,7 +9,7 @@ setup(
     name="polarfrost",
     version="0.2.0",
     packages=find_packages(exclude=["tests*"]),
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=[
         "polars==1.30.0",  # Pinned to ensure compatibility
         "pandas>=1.3.0",
