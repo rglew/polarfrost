@@ -94,8 +94,10 @@ def test_clustering_invalid_input_type() -> None:
     """Test that invalid input types raise appropriate errors."""
     # Test invalid input type
     # Test with intentionally wrong type to trigger the error
+    # Intentional type error test - we're checking the runtime validation
     with pytest.raises(
-        ValueError, match="Input must be a Polars DataFrame or LazyFrame"
+        ValueError,
+        match="Input must be a Polars DataFrame or LazyFrame"
     ):
         clustering_k_anonymity(
             "not a dataframe",  # type: ignore[arg-type]  # Intentional error
