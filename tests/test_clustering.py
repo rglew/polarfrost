@@ -100,8 +100,10 @@ def test_clustering_invalid_input_type() -> None:
         match="Input must be a Polars DataFrame or LazyFrame"
     ):
         # Intentional type error test - we're checking the runtime validation
+        # mypy: disable-error-code=arg-type,call-arg
         clustering_k_anonymity(
-            "not a dataframe",  # type: ignore[arg-type]  # noqa: F821
+            # Test runtime validation with invalid input type
+            "not a dataframe",  # type: ignore[arg-type]
             ["age"],
             "income",
             k=2
