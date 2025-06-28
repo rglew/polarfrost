@@ -2,8 +2,6 @@
 Test the Mondrian k-anonymity implementation with sample data.
 """
 
-import os
-
 import polars as pl
 import pytest
 
@@ -17,14 +15,8 @@ def test_mondrian_basic() -> None:
         "age": [25, 25, 35, 35, 45, 45, 55, 55],
         "gender": ["M", "M", "F", "F", "M", "M", "F", "F"],
         "zipcode": [
-            "12345",
-            "12345",
-            "12345",
-            "12345",
-            "67890",
-            "67890",
-            "67890",
-            "67890",
+            "12345", "12345", "12345", "12345",
+            "67890", "67890", "67890", "67890",
         ],
         "income": [50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000],
     }
@@ -37,7 +29,7 @@ def test_mondrian_basic() -> None:
     k = 2
 
     anon_df = mondrian_k_anonymity(
-        df,
+        df=df,
         quasi_identifiers=quasi_identifiers,
         sensitive_column=sensitive_column,
         k=k,
@@ -47,9 +39,11 @@ def test_mondrian_basic() -> None:
     # Verify the output
     assert isinstance(anon_df, pl.DataFrame)
     assert len(anon_df) > 0  # Should have at least one group
+    # All groups should satisfy k-anonymity
     assert all(
-        count >= k for count in anon_df["count"]
-    )  # All groups should satisfy k-anonymity
+        count >= k
+        for count in anon_df["count"]
+    )
 
     # Check that all quasi-identifiers are generalized
     for col in quasi_identifiers:
@@ -86,13 +80,15 @@ def test_mondrian_invalid_input() -> None:
     """Test that invalid inputs raise appropriate errors."""
     df = pl.DataFrame({"age": [1, 2, 3], "income": [10, 20, 30]})
 
-    # Test with k larger than dataset size - should return a single group
+# Test with k larger than dataset size - should return a single group
     result = mondrian_k_anonymity(df, ["age"], "income", k=5)
     # Use shape[0] instead of len() for DataFrame compatibility
-    assert result.shape[0] == 1  # Should return a single group with all records
-    assert result["count"][0] == 3  # All records should be in one group
+    # Should return a single group with all records
+    assert result.shape[0] == 1
+    # All records should be in one group
+    assert result["count"][0] == 3
 
-    # Test with invalid column names
+# Test with invalid column names
     with pytest.raises(pl.exceptions.ColumnNotFoundError):
         mondrian_k_anonymity(df, ["invalid"], "income", k=2)
 

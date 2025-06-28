@@ -1,6 +1,5 @@
 """Tests for the clustering-based k-anonymity implementation."""
 
-import numpy as np
 import polars as pl
 import pytest
 
@@ -23,10 +22,14 @@ def test_clustering_not_implemented() -> None:
     )
 
     with pytest.raises(
-        NotImplementedError, match="Clustering k-anonymity will be implemented soon"
+        NotImplementedError,
+        match="Clustering k-anonymity will be implemented soon"
     ):
         clustering_k_anonymity(
-            df, quasi_identifiers=["age", "gender"], sensitive_column="income", k=2
+            df,
+            quasi_identifiers=["age", "gender"],
+            sensitive_column="income",
+            k=2
         )
 
 
@@ -50,7 +53,10 @@ def test_clustering_empty_dataframe() -> None:
 
     with pytest.raises(ValueError, match="Input DataFrame cannot be empty"):
         clustering_k_anonymity(
-            df, quasi_identifiers=["age"], sensitive_column="income", k=2
+            df,
+            quasi_identifiers=["age"],
+            sensitive_column="income",
+            k=2
         )
 
 
@@ -65,7 +71,12 @@ def test_clustering_invalid_k() -> None:
         clustering_k_anonymity(df, ["age"], "income", k=-1)
 
     with pytest.raises(ValueError, match="k must be a positive integer"):
-        clustering_k_anonymity(df, ["age"], "income", k="not_an_integer")  # type: ignore[arg-type]
+        clustering_k_anonymity(
+            df,
+            ["age"],
+            "income",
+            k="not_an_integer"  # type: ignore[arg-type]
+        )
 
 
 def test_clustering_missing_columns() -> None:
@@ -81,13 +92,25 @@ def test_clustering_missing_columns() -> None:
 
 def test_clustering_invalid_input_type() -> None:
     """Test that invalid input types raise appropriate errors."""
+    # Test invalid input type
     with pytest.raises(
         ValueError, match="Input must be a Polars DataFrame or LazyFrame"
     ):
-        clustering_k_anonymity("not a dataframe", ["age"], "income", k=2)
+        clustering_k_anonymity(
+            "not a dataframe", ["age"], "income", k=2
+        )  # type: ignore[arg-type]
 
-    with pytest.raises(ValueError, match="quasi_identifiers must be a non-empty list"):
-        clustering_k_anonymity(pl.DataFrame({"age": [1, 2, 3]}), [], "income", k=2)
+    # Test empty quasi_identifiers list
+    with pytest.raises(
+        ValueError,
+        match="quasi_identifiers must be a non-empty list"
+    ):
+        clustering_k_anonymity(
+            pl.DataFrame({"age": [1, 2, 3]}),
+            [],  # Empty list should raise error
+            "income",
+            k=2
+        )
 
 
 def test_clustering_with_lazyframe() -> None:
@@ -102,5 +125,8 @@ def test_clustering_with_lazyframe() -> None:
 
     with pytest.raises(NotImplementedError):
         clustering_k_anonymity(
-            df, quasi_identifiers=["age", "gender"], sensitive_column="income", k=2
+            df,
+            quasi_identifiers=["age", "gender"],
+            sensitive_column="income",
+            k=2
         )

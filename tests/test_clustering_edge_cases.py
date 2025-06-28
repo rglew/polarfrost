@@ -1,6 +1,5 @@
 """Edge case tests for the clustering k-anonymity implementation."""
 
-import numpy as np
 import polars as pl
 import pytest
 
@@ -132,14 +131,15 @@ def test_clustering_with_lazyframe():
         }
     ).lazy()
 
-    # This should raise NotImplementedError since clustering is not implemented yet
+# This should raise NotImplementedError since clustering is not implemented yet
     with pytest.raises(NotImplementedError):
         clustering_k_anonymity(
             df=df,
             quasi_identifiers=["age", "gender"],
             sensitive_column="condition",
             k=2,
-            method="fcbg",  # Using a valid method that's not implemented yet
+            # Using a valid method that's not implemented yet
+            method="fcbg"
         )
 
 
@@ -150,12 +150,14 @@ def test_clustering_with_none_values():
         {
             "age": [25, None, 35, 40, 45, 50, 55, 60],
             "gender": ["M", "F", None, "F", "M", "F", "M", None],
-            "income": [50000, 60000, 70000, None, 90000, 100000, 110000, 120000],
+            "income": [
+                50000, 60000, 70000, None, 90000, 100000, 110000, 120000  # noqa: E501
+            ],
             "condition": ["A", "B", "A", "B", "A", "B", "A", "B"],
         }
     )
 
-    # This should raise NotImplementedError since clustering is not implemented yet
+# This should raise NotImplementedError since clustering is not implemented yet
     with pytest.raises(NotImplementedError):
         clustering_k_anonymity(
             df=df,

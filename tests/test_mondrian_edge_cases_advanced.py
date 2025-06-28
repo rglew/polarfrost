@@ -1,8 +1,6 @@
 """Advanced edge case tests for Mondrian k-anonymity implementation."""
 
-import numpy as np
 import polars as pl
-import pytest
 
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
@@ -10,7 +8,12 @@ from polarfrost.mondrian import mondrian_k_anonymity_polars
 def test_mondrian_single_record():
     """Test with a single record - should return as is."""
     df = pl.DataFrame(
-        {"age": [30], "gender": ["M"], "zipcode": ["12345"], "condition": ["A"]}
+        {
+            "age": [30],
+            "gender": ["M"],
+            "zipcode": ["12345"],
+            "condition": ["A"]
+        }
     )
 
     result = mondrian_k_anonymity_polars(
@@ -52,7 +55,9 @@ def test_mondrian_mixed_data_types():
         {
             "age": [25, None, 35, 40, 45, None, 55, 60],
             "gender": ["M", "F", None, "F", "M", "F", "M", None],
-            "income": [50000, 60000, 70000, None, 90000, 100000, 110000, 120000],
+            "income": [
+                50000, 60000, 70000, None, 90000, 100000, 110000, 120000
+            ],
             "zipcode": [
                 "12345",
                 "12345",
@@ -85,7 +90,12 @@ def test_mondrian_special_characters():
         {
             "name": ["John", "Jane", "Jake", "Jill"],
             "age": [25, 25, 30, 30],
-            "address": ["123 Main St", "456 Oak Ave", "123 Main St", "789 Pine Rd"],
+            "address": [
+                "123 Main St",
+                "456 Oak Ave",
+                "123 Main St",
+                "789 Pine Rd"
+            ],
             "condition": ["A", "B", "A", "B"],
         }
     )
@@ -129,7 +139,10 @@ def test_mondrian_numeric_as_categorical():
     df = pl.DataFrame(
         {
             "age": [25, 25, 30, 30, 35, 35, 40, 40],
-            "zipcode": [12345, 12345, 12345, 12345, 67890, 67890, 67890, 67890],
+            "zipcode": [
+                12345, 12345, 12345, 12345,
+                67890, 67890, 67890, 67890
+            ],
             "condition": ["A", "B", "A", "B", "A", "B", "A", "B"],
         }
     )
@@ -139,10 +152,14 @@ def test_mondrian_numeric_as_categorical():
         quasi_identifiers=["age", "zipcode"],
         sensitive_column="condition",
         k=2,
-        categorical=["age", "zipcode"],  # Treating numeric columns as categorical
+        categorical=["age", "zipcode"],  # Numeric as categorical
     )
 
     assert len(result) >= 1
     assert all(count >= 2 for count in result["count"].to_list())
-    # Verify that zipcode was treated as categorical (should be a string in output)
-    assert all(isinstance(zipcode, str) for zipcode in result["zipcode"].to_list())
+    # Verify that zipcode was treated as categorical
+    # (should be a string in output)
+    assert all(
+        isinstance(zipcode, str)
+        for zipcode in result["zipcode"].to_list()
+    )

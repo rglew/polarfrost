@@ -1,8 +1,10 @@
-"""Additional edge case tests for Polars implementation of Mondrian k-anonymity."""
+"""Additional edge case tests.
+
+Tests for Polars implementation of Mondrian k-anonymity.
+"""
 
 import numpy as np
 import polars as pl
-import pytest
 
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
@@ -45,7 +47,10 @@ def test_single_record_partitions():
     )
 
     result = mondrian_k_anonymity_polars(
-        df, quasi_identifiers=["age", "gender"], sensitive_column="condition", k=1
+        df=df,
+        quasi_identifiers=["age", "gender"],
+        sensitive_column="condition",
+        k=1
     )
 
     # With k=1, should get same number of groups as input rows
@@ -64,7 +69,10 @@ def test_all_identical_records():
     )
 
     result = mondrian_k_anonymity_polars(
-        df, quasi_identifiers=["age", "gender"], sensitive_column="condition", k=2
+        df=df,
+        quasi_identifiers=["age", "gender"],
+        sensitive_column="condition",
+        k=2
     )
 
     # Should have exactly one group with all records
@@ -74,12 +82,16 @@ def test_all_identical_records():
 
 def test_numerical_precision():
     """Test handling of floating point precision in numerical data."""
-    df = pl.DataFrame(
-        {"value": [1.1, 1.1000001, 2.2, 2.2000001], "category": ["A", "A", "B", "B"]}
-    )
+    df = pl.DataFrame({
+        "value": [1.1, 1.1000001, 2.2, 2.2000001],
+        "category": ["A", "A", "B", "B"]
+    })
 
     result = mondrian_k_anonymity_polars(
-        df, quasi_identifiers=["value"], sensitive_column="category", k=2
+        df=df,
+        quasi_identifiers=["value"],
+        sensitive_column="category",
+        k=2
     )
 
     # Should have two groups, each with 2 records
@@ -97,12 +109,14 @@ def test_large_k_value():
         }
     )
 
-    # When k is larger than the number of records, all records will be in a single group
+# When k is larger than the number of records,
+    # all records will be in a single group
     result = mondrian_k_anonymity_polars(
         df,
         quasi_identifiers=["age", "gender"],
         sensitive_column="condition",
-        k=5,  # Larger than number of rows (4)
+        # Larger than number of rows (4)
+        k=5,
     )
 
     # Should have exactly one group with all records
@@ -120,7 +134,10 @@ def test_performance_large_dataset():
         {
             "age": np.random.randint(18, 80, n),
             "gender": np.random.choice(["M", "F"], n),
-            "zipcode": [f"{np.random.randint(10000, 99999):05d}" for _ in range(n)],
+            "zipcode": [
+                f"{np.random.randint(10000, 99999):05d}"
+                for _ in range(n)
+            ],
             "income": np.random.normal(50000, 15000, n).astype(int),
             "condition": np.random.choice(["A", "B", "C", "D"], n),
         }
@@ -137,4 +154,6 @@ def test_performance_large_dataset():
     # Basic validation
     assert len(result) > 0
     assert all(count >= 10 for count in result["count"].to_list())
-    assert set(result.columns) == {"age", "gender", "zipcode", "condition", "count"}
+    assert set(result.columns) == {
+        "age", "gender", "zipcode", "condition", "count"
+    }

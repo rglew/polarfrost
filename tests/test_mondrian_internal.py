@@ -2,7 +2,6 @@
 
 import numpy as np
 import polars as pl
-import pytest
 
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
@@ -89,7 +88,10 @@ def test_mondrian_numerical_precision():
     )
 
     result = mondrian_k_anonymity_polars(
-        df, quasi_identifiers=["value", "category"], sensitive_column="condition", k=2
+        df=df,
+        quasi_identifiers=["value", "category"],
+        sensitive_column="condition",
+        k=2
     )
 
     assert len(result) >= 1
@@ -98,17 +100,21 @@ def test_mondrian_numerical_precision():
 
 def test_mondrian_mixed_numeric_types():
     """Test handling of mixed numeric types (int, float)."""
-    # Explicitly specify dtypes to avoid inference issues
+# Explicitly specify dtypes to avoid inference issues
     df = pl.DataFrame(
         {
-            "value": [1.0, 2.5, 3.0, 4.5, 5.0, 6.5],  # All floats to avoid type issues
+            # All floats to avoid type issues
+            "value": [1.0, 2.5, 3.0, 4.5, 5.0, 6.5],
             "category": ["A", "B", "A", "B", "A", "B"],
             "condition": ["X", "Y", "X", "Y", "X", "Y"],
         }
     )
 
     result = mondrian_k_anonymity_polars(
-        df, quasi_identifiers=["value", "category"], sensitive_column="condition", k=2
+        df=df,
+        quasi_identifiers=["value", "category"],
+        sensitive_column="condition",
+        k=2
     )
 
     assert len(result) >= 1
@@ -120,15 +126,19 @@ def test_mondrian_large_dataset():
     np.random.seed(42)
 
     # Generate a larger dataset with clear patterns
-    n = 100  # Reduced from 1000 to make tests faster while still testing the logic
+    # Reduced from 1000 to make tests faster while still testing the logic
+    n = 100
     ages = np.random.randint(20, 70, n)
     genders = np.random.choice(["M", "F"], n)
     zipcodes = [f"{np.random.randint(10000, 100000)}" for _ in range(n)]
     conditions = np.random.choice(["A", "B", "C", "D"], n)
 
-    df = pl.DataFrame(
-        {"age": ages, "gender": genders, "zipcode": zipcodes, "condition": conditions}
-    )
+    df = pl.DataFrame({
+        "age": ages,
+        "gender": genders,
+        "zipcode": zipcodes,
+        "condition": conditions
+    })
 
     result = mondrian_k_anonymity_polars(
         df,
@@ -141,4 +151,6 @@ def test_mondrian_large_dataset():
     # Verify basic properties
     assert len(result) >= 1  # At least one group
     assert all(count >= 10 for count in result["count"].to_list())
-    assert set(result.columns) == {"age", "gender", "zipcode", "condition", "count"}
+    assert set(result.columns) == {
+        "age", "gender", "zipcode", "condition", "count"
+    }

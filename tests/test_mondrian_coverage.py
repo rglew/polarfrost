@@ -1,13 +1,8 @@
 """Additional tests to improve coverage of mondrian.py."""
 
-from unittest.mock import MagicMock, patch
-
-import numpy as np
 import polars as pl
-import pytest
 
-from polarfrost.mondrian import (mondrian_k_anonymity,
-                                 mondrian_k_anonymity_polars)
+from polarfrost.mondrian import mondrian_k_anonymity_polars
 
 
 def test_mondrian_invalid_input_types():
@@ -19,17 +14,12 @@ def test_mondrian_invalid_input_types():
 
 def test_mondrian_empty_quasi_identifiers():
     """Test with empty quasi_identifiers list."""
-    df = pl.DataFrame({"age": [25, 30, 35, 40], "condition": ["A", "B", "A", "B"]})
-
-    # Skip this test as the actual error message might vary
-    # and we've already tested the validation in other tests
+    # Skip this test as it's already covered in other test files
     pass
 
 
 def test_mondrian_sensitive_column_not_in_df():
     """Test when sensitive column is not in the DataFrame."""
-    df = pl.DataFrame({"age": [25, 30, 35, 40], "gender": ["M", "F", "M", "F"]})
-
     # Skip this test as it's already covered in other test files
     pass
 
@@ -61,14 +51,21 @@ def test_mondrian_with_none_values():
 
 
 def test_mondrian_with_duplicate_columns():
-    """Test handling of duplicate column names in quasi_identifiers and categorical."""
+    """Test handling of duplicate column names.
+
+    Verifies behavior with duplicate column names in
+    quasi_identifiers and categorical.
+    """
     # Skip this test as it's already covered in other test files
     pass
 
 
 def test_mondrian_with_single_column():
     """Test with a single quasi-identifier column."""
-    df = pl.DataFrame({"age": [25, 25, 35, 35], "condition": ["A", "B", "A", "B"]})
+    df = pl.DataFrame({
+        "age": [25, 25, 35, 35],
+        "condition": ["A", "B", "A", "B"]
+    })
 
     result = mondrian_k_anonymity_polars(
         df, quasi_identifiers=["age"], sensitive_column="condition", k=2
@@ -76,10 +73,10 @@ def test_mondrian_with_single_column():
 
     assert len(result) >= 1
     assert all(count >= 2 for count in result["count"].to_list())
-    assert result["age"].to_list() == ["25-25", "35-35"] or result["age"].to_list() == [
-        "35-35",
-        "25-25",
-    ]
+    expected1 = ["25-25", "35-35"]
+    expected2 = ["35-35", "25-25"]
+    actual = result["age"].to_list()
+    assert actual == expected1 or actual == expected2
 
 
 def test_mondrian_with_large_k():
@@ -96,7 +93,8 @@ def test_mondrian_with_large_k():
         df,
         quasi_identifiers=["age", "gender"],
         sensitive_column="condition",
-        k=10,  # Larger than number of records
+        # Larger than number of records
+        k=10,
     )
 
     # Should have exactly one group with all records

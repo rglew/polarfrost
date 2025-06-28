@@ -1,9 +1,6 @@
 """Tests for the core Mondrian algorithm implementation."""
 
-import numpy as np
 import polars as pl
-import pytest
-
 from polarfrost.mondrian import mondrian_k_anonymity_polars
 
 
@@ -13,14 +10,20 @@ def test_mondrian_numerical_attributes():
     df = pl.DataFrame(
         {
             "age": [25, 25, 30, 30, 35, 35, 40, 40],
-            "income": [50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000],
+            "income": [
+                50000, 55000, 60000, 65000,
+                70000, 75000, 80000, 85000
+            ],
             "condition": ["A", "B"] * 4,
         }
     )
 
     # Apply k-anonymity with k=2
     result = mondrian_k_anonymity_polars(
-        df, quasi_identifiers=["age", "income"], sensitive_column="condition", k=2
+        df,
+        quasi_identifiers=["age", "income"],
+        sensitive_column="condition",
+        k=2
     )
 
     # Verify the result has the expected columns
@@ -32,7 +35,7 @@ def test_mondrian_numerical_attributes():
 
 def test_mondrian_categorical_attributes():
     """Test Mondrian with categorical attributes."""
-    # Create a test DataFrame with categorical quasi-identifiers
+# Create a test DataFrame with categorical quasi-identifiers
     df = pl.DataFrame(
         {
             "gender": ["M", "M", "F", "F", "M", "M", "F", "F"],
@@ -68,12 +71,15 @@ def test_mondrian_categorical_attributes():
 
 def test_mondrian_mixed_attributes():
     """Test Mondrian with mixed numerical and categorical attributes."""
-    # Create a test DataFrame with mixed attribute types
+# Create a test DataFrame with mixed attribute types
     df = pl.DataFrame(
         {
             "age": [25, 25, 30, 30, 35, 35, 40, 40],
             "gender": ["M", "M", "F", "F", "M", "M", "F", "F"],
-            "income": [50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000],
+            "income": [
+                50000, 55000, 60000, 65000,
+                70000, 75000, 80000, 85000
+            ],
             "zipcode": [
                 "12345",
                 "12345",
@@ -114,7 +120,10 @@ def test_mondrian_mixed_attributes():
 def test_mondrian_small_k():
     """Test Mondrian with k=1 (minimum group size)."""
     # Create a small test DataFrame
-    df = pl.DataFrame({"age": [25, 30, 35, 40], "condition": ["A", "B", "A", "B"]})
+    df = pl.DataFrame({
+        "age": [25, 30, 35, 40],
+        "condition": ["A", "B", "A", "B"]
+    })
 
     # Apply k-anonymity with k=1 (minimum group size)
     result = mondrian_k_anonymity_polars(
@@ -129,14 +138,18 @@ def test_mondrian_small_k():
 def test_mondrian_large_k():
     """Test Mondrian with k larger than the number of records."""
     # Create a small test DataFrame
-    df = pl.DataFrame({"age": [25, 30, 35, 40], "condition": ["A", "B", "A", "B"]})
+    df = pl.DataFrame({
+        "age": [25, 30, 35, 40],
+        "condition": ["A", "B", "A", "B"]
+    })
 
     # Apply k-anonymity with k larger than the number of records
     result = mondrian_k_anonymity_polars(
         df,
         quasi_identifiers=["age"],
         sensitive_column="condition",
-        k=5,  # Larger than number of records (4)
+        # Larger than number of records (4)
+        k=5,
     )
 
     # Should have exactly one group with all records
