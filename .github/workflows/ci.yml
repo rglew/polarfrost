@@ -56,23 +56,13 @@ jobs:
     
     - name: Install mypy dependencies
       run: |
-        # Install type stubs with pinned versions
-        pip install pandas-stubs==2.2.3.250527 pyspark-stubs==3.0.0.post3 types-pytz==2025.2.0.20250516
+        # Install only the pandas stubs we need
+        pip install pandas-stubs==2.2.3.250527 types-pytz==2025.2.0.20250516
         
-    - name: Debug versions
-      run: |
-        pip freeze | grep -E 'mypy|pyspark|pandas|pyspark-stubs|pandas-stubs'
-        echo "MYPY VERSION:"
-        mypy --version
-        echo "MYPY CONFIG:"
-        cat mypy.ini || echo "No mypy.ini found"
-        echo "RUNNING MYPY:"
-        mypy polarfrost/ tests/mondrian.py --config-file mypy.ini
-
     - name: Run mypy
       run: |
         # Run mypy with explicit config file and paths
-        mypy polarfrost/mondrian.py --config-file mypy.ini
+        mypy polarfrost/mondrian.py --config-file mypy.ini --show-error-context --show-column-numbers --show-error-codes
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
