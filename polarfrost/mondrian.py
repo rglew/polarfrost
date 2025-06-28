@@ -210,7 +210,7 @@ def mondrian_k_anonymity_spark(
         Anonymized DataFrame with generalized quasi-identifiers
     """
     import pandas as pd
-    from pyspark.sql.functions import PandasUDFType, pandas_udf
+    from pyspark.sql.functions import pandas_udf, PandasUDFType
 
     # Validate k parameter first
     if not isinstance(k, int) or k <= 0:
@@ -231,7 +231,7 @@ def mondrian_k_anonymity_spark(
     @pandas_udf(
         returnType=schema,
         functionType=PandasUDFType.GROUPED_MAP,
-    )  # type: ignore[misc]  # pandas_udf decorator not fully typed
+    )
     def mondrian_partition(pdf: pd.DataFrame) -> pd.DataFrame:
         """Process a partition of data using Mondrian k-anonymity.
 

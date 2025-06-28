@@ -10,7 +10,7 @@ setup(
     name="polarfrost",
     version="0.2.0",
     packages=find_packages(exclude=["tests*"]),
-    python_requires=">=3.9",
+    python_requires=">=3.9,<3.12",  # Explicitly support up to Python 3.11
     install_requires=[
         "polars==1.30.0",  # Pinned to ensure compatibility
         "pandas>=1.3.0",
@@ -43,10 +43,10 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.11.13",
         "Topic :: Scientific/Engineering",
         "Topic :: Security",
         "Topic :: Software Development :: Libraries :: Python Modules",
