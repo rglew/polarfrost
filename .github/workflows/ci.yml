@@ -56,8 +56,8 @@ jobs:
     
     - name: Install mypy dependencies
       run: |
-        # Install type stubs
-        pip install pandas-stubs pyspark-stubs types-pytz
+        # Install type stubs with pinned versions
+        pip install pandas-stubs==2.2.3.250527 pyspark-stubs==3.5.0.1 types-pytz==2024.1.0
         
     - name: Run mypy
       run: |
