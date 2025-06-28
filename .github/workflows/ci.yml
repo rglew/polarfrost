@@ -55,7 +55,9 @@ jobs:
           --cov-report=term \
           --durations=10 \
           --cov-fail-under=50
-        
+    
+    - name: Run mypy
+      run: |
         # Run mypy with the same configuration as locally
         mypy polarfrost/ tests/
 
@@ -83,9 +85,8 @@ jobs:
 
     - name: Run pre-commit
       run: |
-        # Only run flake8 and mypy through pre-commit to match local workflow
+        # Only run flake8 through pre-commit (mypy is run separately in the test job)
         pre-commit run --all-files flake8
-        pre-commit run --all-files mypy
 
   # Type checking is now part of the test job to match local workflow
 
