@@ -1,10 +1,16 @@
 """Tests for edge cases in the Mondrian k-anonymity implementation."""
 
+from typing import Any, Dict, List, Optional, Union, cast
+
 import numpy as np
 import polars as pl
 import pytest
+from pyspark.sql import DataFrame as SparkDataFrame
 
 from polarfrost import mondrian_k_anonymity, mondrian_k_anonymity_polars
+
+# Type alias for the return type of mondrian_k_anonymity
+MondrianResult = Union[pl.DataFrame, SparkDataFrame]
 
 
 def test_mondrian_empty_dataframe() -> None:
@@ -41,21 +47,22 @@ def test_mondrian_k_larger_than_dataset() -> None:
 
 def test_mondrian_single_column() -> None:
     """Test with a single quasi-identifier column."""
-    df = pl.DataFrame(
+    df: pl.DataFrame = pl.DataFrame(
         {
             "age": [25, 25, 30, 30, 35, 35],
             "income": [50000, 55000, 60000, 65000, 70000, 75000],
         }
     )
 
-    result = mondrian_k_anonymity(
+    result = cast(pl.DataFrame, mondrian_k_anonymity(
         df, quasi_identifiers=["age"], sensitive_column="income", k=2
-    )
+    ))
 
     # Should have at least one group
     assert result.shape[0] > 0  # Using shape[0] for DataFrame compatibility
     # Each group should have at least k records
-    assert all(count >= 2 for count in result["count"])
+    count_values: list[int] = result["count"].to_list()
+    assert all(count >= 2 for count in count_values)
 
 
 def test_mondrian_all_identical() -> None:
@@ -79,7 +86,7 @@ def test_mondrian_all_identical() -> None:
 
 def test_mondrian_with_nulls() -> None:
     """Test handling of null values in the data."""
-    df = pl.DataFrame(
+    df: pl.DataFrame = pl.DataFrame(
         {
             "age": [25, None, 30, 30, None, 35],
             "gender": ["M", "F", None, "F", "M", None],
@@ -87,23 +94,24 @@ def test_mondrian_with_nulls() -> None:
         }
     )
 
-    result = mondrian_k_anonymity(
+    result = cast(pl.DataFrame, mondrian_k_anonymity(
         df,
         quasi_identifiers=["age", "gender"],
         sensitive_column="income",
         k=2,
         categorical=["gender"],
-    )
+    ))
 
     # Should complete without errors
     assert result.shape[0] > 0  # Using shape[0] for DataFrame compatibility
     # All groups should satisfy k-anonymity
-    assert all(count >= 2 for count in result["count"])
+    count_values: list[int] = result["count"].to_list()
+    assert all(count >= 2 for count in count_values)
 
 
 def test_mondrian_lazyframe_input() -> None:
     """Test that the function works with LazyFrame input."""
-    df = pl.DataFrame(
+    df: pl.LazyFrame = pl.DataFrame(
         {
             "age": [25, 25, 30, 30, 35, 35],
             "gender": ["M", "M", "F", "F", "M", "M"],
@@ -111,18 +119,19 @@ def test_mondrian_lazyframe_input() -> None:
         }
     ).lazy()
 
-    result = mondrian_k_anonymity_polars(
+    result = cast(pl.DataFrame, mondrian_k_anonymity_polars(
         df,
         quasi_identifiers=["age", "gender"],
         sensitive_column="income",
         k=2,
         categorical=["gender"],
-    )
+    ))
 
     # Should complete without errors
     assert result.shape[0] > 0  # Using shape[0] for DataFrame compatibility
     # All groups should satisfy k-anonymity
-    assert all(count >= 2 for count in result["count"])
+    count_values: list[int] = result["count"].to_list()
+    assert all(count >= 2 for count in count_values)
 
 
 def test_mondrian_invalid_k() -> None:
