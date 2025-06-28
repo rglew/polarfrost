@@ -93,6 +93,7 @@ def test_clustering_missing_columns() -> None:
 def test_clustering_invalid_input_type() -> None:
     """Test that invalid input types raise appropriate errors."""
     # Test invalid input type
+    # Test with intentionally wrong type to trigger the error
     with pytest.raises(
         ValueError, match="Input must be a Polars DataFrame or LazyFrame"
     ):
