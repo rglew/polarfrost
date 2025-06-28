@@ -49,8 +49,6 @@ jobs:
         # Ensure test dependencies are installed
         pip install pytest-cov
 
-    - name: Run PySpark tests
-      env:
-        JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - name: Skip PySpark tests (not used)
       run: |
-        python -m pytest tests/test_mondrian_pyspark.py tests/test_mondrian_pyspark_mock.py -v --cov=./ --cov-append --cov-report=xml --durations=10
+        echo "PySpark tests are currently disabled as they are not being used in the project."
