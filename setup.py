@@ -30,7 +30,13 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/rglew/polarfrost",
-    keywords=["anonymization", "privacy", "polars", "k-anonymity", "data-privacy"],
+    keywords=[
+        "anonymization",
+        "privacy",
+        "polars",
+        "k-anonymity",
+        "data-privacy"
+    ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
