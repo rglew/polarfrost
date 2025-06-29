@@ -20,6 +20,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+notebooks/ #temp make visible so windsurf can do its thing
 
 # Virtual Environment
 venv/

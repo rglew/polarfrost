@@ -237,7 +237,7 @@ def mondrian_k_anonymity_spark(
         returnType=schema,
         functionType=PandasUDFType.GROUPED_MAP,
     )
-    def mondrian_partition(pdf: pd.DataFrame) -> pd.DataFrame:
+    def mondrian_partition(pdf: 'pd.DataFrame') -> 'pd.DataFrame':
         """Process a partition of data using Mondrian k-anonymity.
 
         Args:
