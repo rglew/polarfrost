@@ -23,6 +23,65 @@ A high-performance k-anonymity implementation using Polars, featuring the Mondri
 - 🔄 **Flexible Input**: Works with both eager and lazy Polars DataFrames
 - 📈 **Scalable**: Efficiently handles both small and large datasets
 
+## ⚡ Performance Considerations
+
+### Key Performance Factors
+The performance of k-anonymity in Polarfrost is significantly influenced by:
+
+1. **Data Sparsity**:
+   - High cardinality columns can lead to many small groups
+   - Sparse data may require more generalization to achieve k-anonymity
+   - Consider pre-binning or categorizing high-cardinality columns
+
+2. **Grouping Strategy**:
+   - The choice and number of grouping columns dramatically impacts performance
+   - More groups = more processing time and memory usage
+   - Balanced group sizes yield better performance than highly skewed distributions
+
+3. **Data Structures**:
+   - Current implementation uses standard Polars operations
+   - Memory usage scales with the number of unique groups
+   - Large numbers of small groups can impact performance
+
+### Current Implementation
+The current implementation of the Mondrian algorithm has shown some limitations with very large or sparse datasets due to:
+- Recursive partitioning logic
+- Intermediate data structures
+- Suboptimal memory usage patterns
+
+### Optimization Recommendations
+For better performance:
+
+1. **Pre-process your data**:
+   ```python
+   # Consider reducing cardinality of high-dimension columns
+   df = df.with_columns([
+       pl.when(pl.col("age") < 18).then(pl.lit("0-17"))
+        .when(pl.col("age") < 26).then(pl.lit("18-25"))
+        # ... more bins
+        .otherwise(pl.lit("65+"))
+        .alias("age_group")
+   ])
+   ```
+
+2. **Choose grouping columns wisely**:
+   - Start with 2-3 most significant columns
+   - Monitor group sizes with: `df.group_by(group_cols).count()`
+   - Consider the trade-off between privacy and performance
+
+3. **Monitor memory usage**:
+   - Watch for OOM errors with large group counts
+   - Consider processing in batches if needed
+   - Use `.lazy()` for multi-step operations to enable query optimization
+
+### Future Improvements
+We're actively developing:
+- More efficient algorithms leveraging Polars' native capabilities
+- Better handling of sparse data and high-cardinality columns
+- Improved memory management and reduced memory footprint
+- Distributed processing support for very large datasets
+- More flexible grouping strategies
+
 ## 📦 Installation
 
 ```bash
