@@ -8,13 +8,14 @@ and distributed (PySpark) processing.
 
 from typing import Any, TypeVar, Union
 
-__version__ = "0.2.0"
+__version__ = "0.2.2"
 
 # Import main functions
 try:
     from .clustering import clustering_k_anonymity
     from .mondrian import (
         mondrian_k_anonymity,
+        mondrian_k_anonymity_alt,
         mondrian_k_anonymity_polars,
         mondrian_k_anonymity_spark,
     )
